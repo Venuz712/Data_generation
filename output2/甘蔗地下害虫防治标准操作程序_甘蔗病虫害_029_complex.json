@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "title": "甘蔗地下害虫防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "苗期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "作物幼苗被咬断拖回穴中",
+      "蔗芽和嫩苗基部被咬食",
+      "苗发育不良甚至枯死",
+      "土壤中有洞穴或隧道"
+    ],
+    "triggers": [
+      "3～4月活动期",
+      "夜间活动",
+      "白天深居穴内",
+      "南方各省（自治区）",
+      "1年发生1代"
+    ],
+    "reasoning_chain": "如果观察到甘蔗幼苗基部被咬断或缺失，且发现土壤中有洞穴或隧道，结合3-4月发生期及夜间活动特征，可判定为华南大蟋蟀或东方蝼蛄危害。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "虫害严重程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "田间受害植株的比例及危害程度",
+        "why_important": "决定采用物理诱杀还是化学药剂喷杀"
+      },
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "干燥",
+          "湿润",
+          "积水"
+        ],
+        "description": "田间土壤含水量情况",
+        "why_important": "影响灌水淹杀法的效果及毒饵的持效性"
+      },
+      {
+        "name": "发生时期",
+        "type": "categorical",
+        "options": [
+          "3-4月",
+          "6月中旬后"
+        ],
+        "description": "害虫当前所处的活动阶段",
+        "why_important": "3-4月为害最严重，需重点防治"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "用药历史",
+        "type": "text",
+        "description": "近期是否使用过农药及种类",
+        "why_important": "避免抗药性及农药混用禁忌"
+      },
+      {
+        "name": "田间面积",
+        "type": "numeric",
+        "description": "需要防治的甘蔗田面积",
+        "why_important": "计算农药及诱饵用量"
+      }
+    ],
+    "clarification_templates": {
+      "虫害严重程度": "请问目前甘蔗田受害植株的比例大概是多少？",
+      "土壤湿度": "请问当前田间的土壤湿度情况如何？",
+      "发生时期": "请问当前处于甘蔗种植的哪个阶段或月份？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "虫害严重程度": "轻度",
+          "发生时期": "3-4月"
+        },
+        "response_type": "complete_solution",
+        "content": "建议采用毒饵诱杀或挖坑诱杀。可用狼毒研粉拌入等量米糠做成毒饵，或用敌百虫与炒香的米糠混合诱杀。在被害地边挖长宽各30厘米、深65厘米的坑，内放新鲜牛马粪，上盖青草引诱害虫集中消灭。",
+        "follow_up_question": null,
+        "fallback_strategy": "若诱杀效果不佳，可转为药剂喷杀"
+      },
+      {
+        "condition_checks": {
+          "虫害严重程度": "重度",
+          "土壤湿度": "干燥"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "建议采用药剂喷杀结合毒饵诱杀。可用20％益舒宝颗粒剂拌细土撒施全田，也可用50％巴丹可湿性粉剂500克拌麦麸25千克撒施诱杀。针对大蟋蟀洞穴，可灌入滴有少许煤油的水促虫逃出捕杀。",
+        "follow_up_question": "请问您更倾向于使用哪种农药，或者是否有特定的农药使用限制？",
+        "fallback_strategy": "若无法确定具体害虫种类，优先使用广谱性颗粒剂撒施"
+      }
+    ],
+    "default_response": {
+      "content": "由于信息不足，无法提供精准防治方案。请补充田间虫害严重程度、土壤湿度及发生时期等信息，以便制定针对性措施。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

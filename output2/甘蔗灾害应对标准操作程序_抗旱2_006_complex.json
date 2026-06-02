@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "甘蔗灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "干旱天气",
+      "杂草较多",
+      "螟虫为害",
+      "蓟马、蚜虫、条螟、二点螟"
+    ],
+    "triggers": [
+      "干旱天气利于螟虫为害发生",
+      "杂草丛生",
+      "生长中后期"
+    ],
+    "reasoning_chain": "如果观察到干旱且发现螟虫危害迹象，或杂草丛生，则需启动相应防治措施。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "growth_stage",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前生长阶段",
+        "why_important": "不同阶段管理措施不同，如中耕培土多在分蘖期，一喷多促在中后期"
+      },
+      {
+        "name": "pest_type",
+        "type": "categorical",
+        "options": [
+          "蓟马",
+          "蚜虫",
+          "条螟",
+          "二点螟",
+          "其他"
+        ],
+        "description": "具体虫害类型",
+        "why_important": "决定用药选择，蓟马蚜虫用颗粒剂，螟虫用喷雾或生物防治"
+      },
+      {
+        "name": "weather_status",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "多雨",
+          "正常"
+        ],
+        "description": "当前天气状况",
+        "why_important": "干旱天气利于螟虫发生，影响防治紧迫性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "field_area",
+        "type": "text",
+        "description": "种植面积",
+        "why_important": "计算药剂用量，如颗粒剂 40 毫升/亩"
+      },
+      {
+        "name": "pesticide_history",
+        "type": "text",
+        "description": "近期用药记录",
+        "why_important": "避免抗药性，指导轮换用药"
+      }
+    ],
+    "clarification_templates": {
+      "growth_stage": "请问甘蔗当前处于哪个生长阶段？",
+      "pest_type": "请问田间主要观察到哪种虫害？",
+      "weather_status": "请问近期天气是否干旱？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "growth_stage": "分蘖期",
+          "issue_type": "杂草"
+        },
+        "response_type": "complete_solution",
+        "content": "结合小培土（8—10 厘米）施攻蘖肥，抑制杂草并增强抗倒伏能力。杂草较多的，可使用蔗田专用除草剂控制杂草。",
+        "follow_up_question": "",
+        "fallback_strategy": "若除草剂效果不佳，需人工补除草。"
+      },
+      {
+        "condition_checks": {
+          "growth_stage": "中后期",
+          "weather_status": "干旱",
+          "issue_type": "虫害"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "干旱天气利于螟虫为害发生，需加强防治。虫害重点防控蓟马、蚜虫、条螟、二点螟等。在甘蔗生长中后期，开展基于无人机技术平台的一喷多促工作。",
+        "follow_up_question": "请确认具体是蓟马、蚜虫还是螟虫类害虫，以便推荐精准药剂。",
+        "fallback_strategy": "若无法确认，建议先释放赤眼蜂或安装诱虫笼进行通用防控。"
+      }
+    ],
+    "default_response": {
+      "content": "请提供甘蔗当前生长阶段及主要问题（杂草、虫害或病害）以便提供精准建议。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱2.txt"
+}

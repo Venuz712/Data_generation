@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "title": "甘蔗赤腐病标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "抗病品种",
+      "发芽迅速的品种"
+    ],
+    "growth_stage": "全生育期",
+    "source": "甘蔗赤腐病防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗茎纵剖呈赤红色或暗红色，中间杂有长椭圆形白斑",
+      "腐烂蔗茎外皮出现暗红色斑块，被害部凹陷枯死",
+      "病部表面长有黑色小粉粒状的分生孢子盘",
+      "蔗种切口变红，髓腔中有暗灰色棉絮状菌丝团",
+      "叶片中脉病斑中央变枯白色，边缘呈暗红色或棕黑色",
+      "病部有酸腐味"
+    ],
+    "triggers": [
+      "气温15～20℃",
+      "土壤过酸",
+      "土壤湿度大",
+      "土壤干旱导致蔗芽萌发慢",
+      "暴风雨导致机械损伤",
+      "虫害严重"
+    ],
+    "reasoning_chain": "如果观察到蔗茎或叶片出现赤红色病斑且伴有黑色分生孢子盘，同时环境处于15～20℃或土壤过酸高湿，则可判定为赤腐病。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前生育期",
+        "type": "categorical",
+        "options": [
+          "种苗处理期",
+          "幼苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前所处的生长阶段",
+        "why_important": "不同阶段防治重点不同，种苗期重在消毒，生长期重在田间管理"
+      },
+      {
+        "name": "土壤酸碱度",
+        "type": "categorical",
+        "options": [
+          "酸性",
+          "中性",
+          "碱性"
+        ],
+        "description": "种植土壤的pH性质",
+        "why_important": "土壤过酸是赤腐病发病严重的重要诱因"
+      },
+      {
+        "name": "近期天气状况",
+        "type": "categorical",
+        "options": [
+          "暴风雨",
+          "干旱",
+          "正常"
+        ],
+        "description": "最近一段时间的天气情况",
+        "why_important": "暴风雨造成机械损伤或干旱影响发芽均有利于病菌入侵"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植品种名称",
+        "type": "text",
+        "description": "当前种植的甘蔗品种",
+        "why_important": "用于评估品种抗病性及发芽速度"
+      },
+      {
+        "name": "历史用药记录",
+        "type": "text",
+        "description": "近期是否使用过杀菌剂",
+        "why_important": "避免重复用药或产生抗药性"
+      }
+    ],
+    "clarification_templates": {
+      "当前生育期": "请问甘蔗目前处于哪个生长阶段？是种苗处理、幼苗期还是伸长期？",
+      "土壤酸碱度": "您了解种植地块的土壤酸碱度情况吗？是否偏酸性？",
+      "近期天气状况": "最近是否有暴风雨或持续干旱的情况？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前生育期": "种苗处理期",
+          "近期天气状况": "任意"
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即进行种茎消毒处理。斩种时先将旧切口端部斩除，然后斩成茎段。使用50％多菌灵或50％苯来特可湿性粉剂400～500倍稀释液浸种1分钟。若连续浸种，每浸200～300千克种茎后需适当添加药液以保持浓度。先浸种消毒，然后再行催芽。同时选用抗病品种和无病种苗。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无多菌灵，可咨询当地农技站寻找替代杀菌剂"
+      },
+      {
+        "condition_checks": {
+          "当前生育期": "田间生长",
+          "症状严重程度": "可见病斑"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "田间发现病斑需加强管理。首先推广地膜覆盖栽培，促进早发芽、快成苗。加强田间管理，及时防治虫、鼠为害，控制病害的发生。若土壤过酸，建议进行改良。",
+        "follow_up_question": "请问目前田间是否有虫害或鼠害发生？土壤是否偏酸性？",
+        "fallback_strategy": "若病害蔓延严重，建议拔除病株并销毁，防止扩散"
+      },
+      {
+        "condition_checks": {
+          "近期天气状况": "暴风雨",
+          "当前生育期": "伸长期"
+        },
+        "response_type": "alternative_solution",
+        "content": "暴风雨后机械损伤率高，易引发赤腐病。建议雨后及时检查田间，清理受损蔗茎。选用发芽迅速的品种可降低风险。注意排水，避免土壤湿度过大。",
+        "follow_up_question": null,
+        "fallback_strategy": "加强监测，若发现病斑立即按田间生长方案处理"
+      }
+    ],
+    "default_response": {
+      "content": "检测到赤腐病风险，但缺少关键环境或生育期信息。请补充甘蔗当前生长阶段及近期天气情况，以便提供精准防治方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

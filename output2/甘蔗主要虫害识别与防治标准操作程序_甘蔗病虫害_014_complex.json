@@ -1,0 +1,147 @@
+{
+  "meta": {
+    "title": "甘蔗主要虫害识别与防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治技术文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "虫孔多在生长点外的叶鞘，孔口旁堆有虫粪",
+      "缺苗，咬食嫩芽",
+      "枯心苗",
+      "蔗叶被害，暴食期叶片被啃食",
+      "虫道（木蠹蛾）"
+    ],
+    "triggers": [
+      "与水稻相邻种植的蔗地",
+      "早春开始羽化，3-4 月活动",
+      "5 月上旬幼虫盛期",
+      "夜间活动，有趋光性",
+      "6-7 月为暴食期"
+    ],
+    "reasoning_chain": "如果观察到叶鞘有虫孔且堆有虫粪，且发生在生长点附近，可判定为大螟或木蠹蛾；如果观察到缺苗或嫩芽被咬断，且发生在 3-5 月，可判定为地老虎类；如果叶片被大量啃食且发生在夜间，可判定为夜蛾类。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "pest_name",
+        "type": "categorical",
+        "options": [
+          "大螟",
+          "小地老虎",
+          "小剑切根虫",
+          "斜纹夜蛾",
+          "银纹夜蛾",
+          "两色绿刺蛾",
+          "甘蔗木蠹蛾",
+          "未知"
+        ],
+        "description": "当前田间发生的具体害虫种类",
+        "why_important": "不同害虫的防治药剂和施药时期差异较大，需精准匹配"
+      },
+      {
+        "name": "growth_stage",
+        "type": "categorical",
+        "options": [
+          "播种期",
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生育时期",
+        "why_important": "不同生育期对药剂的敏感性和施药方式（如撒施或喷雾）有不同要求"
+      },
+      {
+        "name": "infestation_level",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "虫害发生的严重程度",
+        "why_important": "决定是否需要紧急化学防治或采用农业/物理防治"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "weather_condition",
+        "type": "text",
+        "description": "当前天气状况",
+        "why_important": "影响喷雾效果和害虫活动习性"
+      },
+      {
+        "name": "previous_pesticide",
+        "type": "text",
+        "description": "近期使用过的农药",
+        "why_important": "避免抗药性产生和药害风险"
+      }
+    ],
+    "clarification_templates": {
+      "pest_name": "请问您观察到的害虫具体形态特征是什么？或者是否有虫孔、缺苗等典型症状？",
+      "growth_stage": "甘蔗目前处于哪个生长阶段？是刚种植、幼苗期还是已经长高？",
+      "infestation_level": "田间受害植株的比例大概是多少？是否已经出现枯心或大面积缺苗？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "pest_name": [
+            "大螟",
+            "甘蔗木蠹蛾"
+          ],
+          "growth_stage": [
+            "播种期",
+            "苗期"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "针对茎秆钻蛀性害虫，建议采取以下措施：1. 播种时，用 10％益舒宝颗粒剂或 3％米乐尔颗粒剂，按每 667 平方米 1.5 千克撒施于蔗种处。2. 在中培土、大培土时施于蔗根，然后覆土。3. 若发现枯心苗，可人工割除或用 0.1％敌百虫溶液加少许煤油，用针筒注入枯心苗内。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法确定具体害虫，优先采用广谱性颗粒剂进行土壤处理。"
+      },
+      {
+        "condition_checks": {
+          "pest_name": [
+            "小地老虎",
+            "小剑切根虫",
+            "斜纹夜蛾"
+          ],
+          "infestation_level": [
+            "中度",
+            "重度"
+          ]
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "针对食叶或咬根类害虫，建议：1. 下种前整地多犁耙，毁灭虫卵。2. 幼虫为害时，选用 90％晶体敌百虫 1000 倍稀释液或 40％特力克 1000 倍稀释液喷杀。3. 利用糖醋液诱杀成虫。4. 堆草诱杀和人工捕捉。",
+        "follow_up_question": "请问田间是否有积水或土壤湿度如何？这会影响撒施颗粒剂的效果。",
+        "fallback_strategy": "若化学防治效果不佳，增加人工捕杀频率，清晨拨开土层寻找幼虫。"
+      },
+      {
+        "condition_checks": {
+          "pest_name": [
+            "未知"
+          ],
+          "infestation_level": [
+            "轻度"
+          ]
+        },
+        "response_type": "alternative_solution",
+        "content": "在虫害初期或种类不明时，优先采用农业防治和物理防治：1. 调整种植期，采用育苗移栽办法。2. 利用灯光诱杀成虫。3. 人工摘卵，捕杀幼虫。4. 保持田间清洁，斩蔗后检查切口。",
+        "follow_up_question": "建议拍摄害虫或受害部位照片以便进一步确诊。",
+        "fallback_strategy": "持续观察 3-5 天，若虫害加重再启动化学防治。"
+      }
+    ],
+    "default_response": {
+      "content": "由于未提供具体的害虫种类和发生程度，无法给出精准防治方案。甘蔗虫害种类繁多（如大螟、地老虎、夜蛾等），防治方法差异较大。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

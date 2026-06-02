@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "title": "甘蔗宿根蔗田间管理标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "宿根萌芽期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "土壤疏松",
+      "粘性土干旱开裂"
+    ],
+    "triggers": [
+      "土壤质地差异",
+      "干旱气候",
+      "降雨不足"
+    ],
+    "reasoning_chain": "若土壤质地疏松，直接破垄松蔸并覆膜；若为粘性土且土壤开裂，需等待降雨湿透后再耕作，避免破坏土壤结构。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤含水量",
+        "type": "numeric",
+        "options": [],
+        "description": "当前土壤的湿润程度",
+        "why_important": "决定粘性土是否可以进行破垄松蔸作业"
+      },
+      {
+        "name": "近期降雨预报",
+        "type": "categorical",
+        "options": [
+          "有中雨",
+          "无雨",
+          "小雨"
+        ],
+        "description": "未来几天的降雨情况",
+        "why_important": "粘性土干旱开裂时需等待中雨湿透土壤"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "地膜类型",
+        "type": "text",
+        "description": "覆盖使用的地膜规格",
+        "why_important": "影响保墒效果和发芽率"
+      },
+      {
+        "name": "宿根年限",
+        "type": "text",
+        "description": "甘蔗宿根的年数",
+        "why_important": "影响根系老化程度和破垄难度"
+      }
+    ],
+    "clarification_templates": {
+      "土壤含水量": "请问当前蔗地土壤是否已经干裂，或者用手捏土能否成团？",
+      "近期降雨预报": "请问当地未来 3 天内是否有中雨以上的降雨预报？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "土壤质地": "疏松",
+          "土壤含水量": "正常或偏低"
+        },
+        "response_type": "complete_solution",
+        "content": "针对土壤疏松的宿根蔗，建议及时破垄松蔸，并立即盖上地膜覆盖，以提高土壤墒情和发芽率。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法立即覆膜，建议先浅耕保墒"
+      },
+      {
+        "condition_checks": {
+          "土壤质地": "粘性土",
+          "土壤含水量": "干旱开裂"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "粘性土若已干旱开裂，暂时无法耕作。建议暂停破垄松蔸操作，等待下中雨使蔗地湿透后再进行深耕破垄松蔸。",
+        "follow_up_question": "请问未来几天是否有中雨预报？",
+        "fallback_strategy": "若长期无雨，考虑人工灌溉湿润土壤后再耕作"
+      }
+    ],
+    "default_response": {
+      "content": "未检测到具体的土壤条件信息。请提供土壤质地（疏松或粘性）及当前干湿状态，以便制定管理方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱1.txt"
+}

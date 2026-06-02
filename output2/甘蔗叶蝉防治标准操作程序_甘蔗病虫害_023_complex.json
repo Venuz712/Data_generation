@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "title": "甘蔗叶蝉防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "成虫体长约5毫米，黄绿色，头顶两复眼间有一黑色横纹",
+      "雄虫翅端1／3处和腹部为黑色",
+      "若虫淡绿色，体各部有黑点，各腹节生短细硬毛",
+      "卵产于蔗叶鞘内，长椭圆形"
+    ],
+    "triggers": [
+      "1年发生约6代",
+      "成虫趋光",
+      "卵产于蔗叶鞘内",
+      "若虫有群集性",
+      "冬季可出现"
+    ],
+    "reasoning_chain": "如果在甘蔗叶鞘或叶片上观察到黄绿色带黑纹成虫或淡绿色带黑点若虫，且环境具有趋光性特征，结合发生代数，可判定为叶蝉危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "危害程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "田间叶蝉密度及叶片受损比例",
+        "why_important": "决定药剂浓度选择和施药频率"
+      },
+      {
+        "name": "甘蔗生育期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前生长阶段",
+        "why_important": "不同阶段对药剂敏感度不同，影响安全性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "天气状况",
+        "type": "text",
+        "description": "当前温度、湿度及风力",
+        "why_important": "影响药效挥发、吸收及飘移风险"
+      },
+      {
+        "name": "用药历史",
+        "type": "text",
+        "description": "近期是否使用过同类药剂",
+        "why_important": "评估抗药性风险，指导轮换用药"
+      }
+    ],
+    "clarification_templates": {
+      "危害程度": "请问目前田间叶蝉的密度如何，叶片受害面积占比大概多少？",
+      "甘蔗生育期": "请问甘蔗当前处于哪个生长阶段？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "危害程度": [
+            "轻度"
+          ],
+          "甘蔗生育期": [
+            "苗期",
+            "分蘖期"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "建议优先采用灯光诱捕物理防治。若需药剂防治，可选用10％吡虫啉5000倍稀释液或2.5％敌杀死3000倍稀释液，注意避开高温时段施药。",
+        "follow_up_question": null,
+        "fallback_strategy": "若3天后虫口密度未下降，升级药剂浓度或更换作用机理"
+      },
+      {
+        "condition_checks": {
+          "危害程度": [
+            "重度"
+          ],
+          "甘蔗生育期": [
+            "伸长期"
+          ]
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "重度危害需立即进行药剂防治，可选用40％乐果乳油、80％敌敌畏乳油或25％喹硫磷均稀释1000～1500倍喷杀。",
+        "follow_up_question": "请问近期是否使用过同类药剂，以防抗药性？",
+        "fallback_strategy": "轮换使用不同作用机理药剂，如仲丁威或灭扫利"
+      }
+    ],
+    "default_response": {
+      "content": "请补充田间危害程度及甘蔗当前生育期信息，以便提供精准防治方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

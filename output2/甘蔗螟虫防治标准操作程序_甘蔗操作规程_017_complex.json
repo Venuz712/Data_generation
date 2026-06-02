@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "title": "甘蔗螟虫防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "螟虫危害",
+      "蓟马危害",
+      "蚜虫危害"
+    ],
+    "triggers": [
+      "飞防作业",
+      "降雨后 6 小时内",
+      "单一药剂连续使用"
+    ],
+    "reasoning_chain": "如果计划进行飞防作业且目标为螟虫等害虫，需确保无降雨且轮换药剂。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "具体药剂名称",
+        "type": "categorical",
+        "options": [
+          "有机磷类",
+          "拟除虫菊酯类",
+          "生物农药"
+        ],
+        "description": "当前计划使用的杀虫剂类型",
+        "why_important": "用于判断抗药性风险及混配兼容性"
+      },
+      {
+        "name": "飞防具体时期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "不同生育期对药剂敏感度不同"
+      },
+      {
+        "name": "近期降雨情况",
+        "type": "categorical",
+        "options": [
+          "无降雨",
+          "6 小时内降雨",
+          "6-24 小时降雨"
+        ],
+        "description": "作业前最近一次降雨时间",
+        "why_important": "决定飞防作业是否可行"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "历史用药记录",
+        "type": "text",
+        "description": "过去使用的药剂名称",
+        "why_important": "辅助判断抗药性"
+      }
+    ],
+    "clarification_templates": {
+      "具体药剂名称": "请问您计划使用哪种类型的杀虫剂？",
+      "飞防具体时期": "请问甘蔗目前处于哪个生长阶段？",
+      "近期降雨情况": "请问作业前 6 小时内是否有降雨？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "近期降雨情况": "无降雨",
+          "具体药剂名称": "非连续单一使用"
+        },
+        "response_type": "complete_solution",
+        "content": "可以立即进行飞防作业，每亩使用 4 千克杀虫剂，可混配杀菌剂或促根剂。",
+        "follow_up_question": null,
+        "fallback_strategy": null
+      },
+      {
+        "condition_checks": {
+          "近期降雨情况": "6 小时内降雨"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "当前条件存在风险，建议调整作业时间或更换药剂。",
+        "follow_up_question": "请确认是否已更换不同作用机制的药剂或等待降雨间隔超过 6 小时？",
+        "fallback_strategy": "暂停作业，等待天气好转"
+      }
+    ],
+    "default_response": {
+      "content": "缺少关键环境或用药信息，无法提供确切方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

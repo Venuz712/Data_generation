@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "title": "甘蔗蝗虫类害虫防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "田间出现直翅目大型昆虫",
+      "成虫体长25～65毫米不等",
+      "体色多为绿色、褐绿色、黄褐色或灰紫褐色",
+      "部分种类体背有黄色纵条纹或黑褐色条斑",
+      "前翅长度与后足胫节比例特征明显"
+    ],
+    "triggers": [
+      "每年发生1代",
+      "以卵块在田埂、荒地越冬",
+      "翌年5月孵化",
+      "跳蝻6～7月间逐渐进入作物地为害",
+      "10～11月间成虫产卵越冬"
+    ],
+    "reasoning_chain": "如果在5月至11月期间，于甘蔗田或周边田埂发现符合上述形态特征的直翅目昆虫，且观察到啃食叶片行为，则可判定为甘蔗蝗虫类害虫。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "infestation_level",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "害虫密度及危害程度",
+        "why_important": "决定药剂浓度和施药频率"
+      },
+      {
+        "name": "pest_specific_id",
+        "type": "categorical",
+        "options": [
+          "印度黄脊蝗",
+          "异岐蔗蝗",
+          "中华稻蝗",
+          "其他"
+        ],
+        "description": "具体害虫种类",
+        "why_important": "不同种类习性略有差异，虽防治药剂通用但精准识别有助于预测爆发"
+      },
+      {
+        "name": "crop_growth_stage",
+        "type": "categorical",
+        "options": [
+          "幼苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前生长阶段",
+        "why_important": "影响作物对药剂的敏感性及安全间隔期"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "weather_forecast",
+        "type": "text",
+        "description": "未来24小时天气情况",
+        "why_important": "降雨会影响喷药效果，大风影响飘移"
+      },
+      {
+        "name": "previous_pesticide_history",
+        "type": "text",
+        "description": "近期用药记录",
+        "why_important": "避免抗药性产生及药害风险"
+      }
+    ],
+    "clarification_templates": {
+      "infestation_level": "请问目前田间害虫密度如何？是零星发现还是大面积爆发？",
+      "pest_specific_id": "能否提供害虫照片或描述其背部是否有黄色纵条纹？",
+      "crop_growth_stage": "甘蔗目前处于哪个生长阶段？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "infestation_level": [
+            "轻度",
+            "中度"
+          ],
+          "crop_growth_stage": [
+            "分蘖期",
+            "伸长期"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即进行药剂防治。可选用80％敌敌畏乳油1000倍稀释液，或10％灭百可乳油、20％速灭杀丁乳油、2.5％敌杀死乳油均2000～4000倍稀释液进行喷杀。同时注意保护天敌，结合农业防治清理田埂杂草以减少虫源。",
+        "follow_up_question": null,
+        "fallback_strategy": "若喷药后3天内未见效果，需检查是否因雨水冲刷或抗药性问题。"
+      },
+      {
+        "condition_checks": {
+          "infestation_level": [
+            "重度"
+          ],
+          "crop_growth_stage": [
+            "幼苗期",
+            "成熟期"
+          ]
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "鉴于虫害严重且处于敏感生长期，建议优先采用物理或生物防治辅助化学防治。药剂选择需谨慎，避免药害。",
+        "follow_up_question": "请问近期是否使用过同类杀虫剂？未来两天是否有降雨计划？",
+        "fallback_strategy": "若无法确认用药历史，建议先小面积试用低浓度药剂观察反应。"
+      }
+    ],
+    "default_response": {
+      "content": "检测到疑似甘蔗蝗虫类害虫信息，但缺乏关键环境及虫害程度数据。为了提供更精准的防治方案，请补充说明田间害虫的具体数量、甘蔗生长阶段以及当地近期天气情况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

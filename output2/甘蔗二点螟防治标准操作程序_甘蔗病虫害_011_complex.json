@@ -1,0 +1,99 @@
+{
+  "meta": {
+    "title": "甘蔗二点螟防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "成虫前翅中室端有2个小黑点",
+      "卵块呈鱼鳞状排列，孵化前转紫黑色",
+      "老熟幼虫体背有5条黄褐色或淡紫色纵线",
+      "蔗头、蔗笋和残茎内有越冬幼虫"
+    ],
+    "triggers": [
+      "旱地和沙土地发生多",
+      "宿根蔗与新植蔗受害较重",
+      "春暖气温回升时化蛹羽化",
+      "一年发生5个重叠世代"
+    ],
+    "reasoning_chain": "如果观察到成虫前翅有2个小黑点或幼虫体背有5条纵线，且发生在旱地或宿根蔗田，结合发生世代时间，可判定为二点螟。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "用药历史",
+        "type": "categorical",
+        "options": [
+          "未使用",
+          "已使用化学农药",
+          "已使用生物农药"
+        ],
+        "description": "近期是否使用过杀虫剂及种类",
+        "why_important": "避免抗药性产生及农药残留超标"
+      },
+      {
+        "name": "危害程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "枯心苗或死苗的比例",
+        "why_important": "决定是否需要化学干预及用药剂量"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "土壤类型",
+        "type": "categorical",
+        "description": "地块土壤质地",
+        "why_important": "沙土地受害更重，需加强监测"
+      },
+      {
+        "name": "种植类型",
+        "type": "categorical",
+        "description": "宿根、新植、冬植或秋植",
+        "why_important": "宿根蔗受害较重，需重点防治"
+      }
+    ],
+    "clarification_templates": {
+      "用药历史": "请问该地块近期是否使用过杀虫剂？如果有，是什么类型？",
+      "危害程度": "请问目前田间枯心苗或死苗的比例大概是多少？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "危害程度": "轻度",
+          "土壤类型": "非沙土地"
+        },
+        "response_type": "complete_solution",
+        "content": "建议采取农业防治为主。清除田间残茎和蔗头，减少越冬虫源；保护利用天敌，如赤眼蜂；加强田间管理，促进甘蔗生长，提高抗虫能力。",
+        "follow_up_question": null,
+        "fallback_strategy": "若一周后虫情加重，转为化学防治方案"
+      },
+      {
+        "condition_checks": {
+          "危害程度": "重度",
+          "种植类型": "宿根蔗"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "建议立即进行化学防治。参考黄螟、大螟防治方法，可选用高效低毒杀虫剂喷雾或灌心。由于原文未指定具体药剂，需结合当地抗性情况选择。",
+        "follow_up_question": "请问该地块近期是否使用过杀虫剂？以避免抗药性风险。",
+        "fallback_strategy": "若无法获取药剂信息，建议联系当地植保站获取推荐清单"
+      }
+    ],
+    "default_response": {
+      "content": "检测到二点螟风险。由于缺乏具体虫害程度和用药历史，无法提供精准方案。建议先进行田间调查，确认虫口密度及发生世代。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

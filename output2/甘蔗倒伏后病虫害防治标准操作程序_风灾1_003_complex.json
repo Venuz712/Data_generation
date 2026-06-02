@@ -1,0 +1,118 @@
+{
+  "meta": {
+    "title": "甘蔗倒伏后病虫害防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "甘蔗倒伏",
+      "茎秆破损伤口",
+      "叶部病害",
+      "绵蚜",
+      "螟虫",
+      "鼠害"
+    ],
+    "triggers": [
+      "倒伏导致伤口增多",
+      "田间巡查发现病虫害发生较重"
+    ],
+    "reasoning_chain": "如果观察到甘蔗倒伏且茎秆有破损伤口，同时田间巡查确认叶部病害、绵蚜、螟虫或鼠害发生较重，则可判定需要启动统一防治措施。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "主要病虫害类型",
+        "type": "categorical",
+        "options": [
+          "叶部病害",
+          "绵蚜",
+          "螟虫",
+          "鼠害",
+          "混合发生"
+        ],
+        "description": "当前田间主要爆发的病虫害种类",
+        "why_important": "不同病虫害需选用不同的杀菌、杀虫或灭鼠药物"
+      },
+      {
+        "name": "发生程度",
+        "type": "categorical",
+        "options": [
+          "轻",
+          "中",
+          "重"
+        ],
+        "description": "病虫害在田间的危害程度",
+        "why_important": "决定是否需要立即组织统一喷施药物"
+      },
+      {
+        "name": "天气状况",
+        "type": "categorical",
+        "options": [
+          "晴天",
+          "雨天",
+          "阴天"
+        ],
+        "description": "当前的气象条件",
+        "why_important": "影响喷施药物的效果和安全性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植密度",
+        "type": "text",
+        "description": "田间甘蔗种植疏密情况",
+        "why_important": "影响通风透光及病虫害传播速度"
+      },
+      {
+        "name": "前茬用药历史",
+        "type": "text",
+        "description": "近期是否使用过同类农药",
+        "why_important": "避免抗药性产生"
+      }
+    ],
+    "clarification_templates": {
+      "主要病虫害类型": "请问目前田间主要观察到的是哪种病虫害？（如叶部病害、绵蚜、螟虫或鼠害）",
+      "发生程度": "请问病虫害的发生程度是轻度、中度还是重度？",
+      "天气状况": "请问当前的天气状况如何？（晴天/雨天/阴天）"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "发生程度": "重",
+          "主要病虫害类型": [
+            "叶部病害",
+            "绵蚜",
+            "螟虫",
+            "鼠害"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "立即组织统一防治。针对叶部病害喷施杀菌剂，针对绵蚜和螟虫喷施杀虫剂，针对鼠害投放灭鼠药。加强田间巡查，确保药物覆盖到位。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法统一组织，建议分户进行针对性防治"
+      },
+      {
+        "condition_checks": {
+          "发生程度": "重",
+          "主要病虫害类型": "未知"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "鉴于倒伏后易发病虫害且程度较重，建议立即准备防治物资。但在具体用药前需确认目标。",
+        "follow_up_question": "请确认田间具体是哪种病虫害发生较重，以便推荐精准药剂。",
+        "fallback_strategy": "若无法确认，建议先喷施广谱性保护剂并投放通用灭鼠药"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定精准防治方案。甘蔗倒伏后易发病虫害，建议加强田间巡查，确认具体病虫害类型及发生程度后再行处理。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "风灾1.txt"
+}

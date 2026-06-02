@@ -1,0 +1,115 @@
+{
+  "meta": {
+    "title": "甘蔗黑穗病标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "热带种"
+    ],
+    "growth_stage": "全生育期",
+    "source": "甘蔗黑穗病防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "梢头长出黑色鞭状物（黑穗）",
+      "黑穗中间有心柱，初期白色软脆，后期褐色坚韧",
+      "周围包有一层黑色的厚膜孢子，外披银白色薄膜",
+      "薄膜破裂成网络状，大量厚膜孢子随气流飞散"
+    ],
+    "triggers": [
+      "土壤干旱利于厚膜孢子积累",
+      "夏、秋季高温多雨",
+      "种植感病品种（如印度种、中国种）",
+      "宿根蔗且宿根年限较长",
+      "甘蔗芽受伤",
+      "土壤瘦瘠、管理差"
+    ],
+    "reasoning_chain": "如果观察到甘蔗梢头长出黑色鞭状物，且当前处于夏秋季高温多雨或土壤干旱环境，结合种植品种为印度种或中国种及宿根年限较长，则可判定为甘蔗黑穗病。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "发病阶段",
+        "type": "categorical",
+        "options": [
+          "初期未出鞭",
+          "已形成黑穗"
+        ],
+        "description": "病害发展的具体时期，是否已长出鞭状物",
+        "why_important": "决定拔除病株后的处理方式（直接拔除或集中烧毁）"
+      },
+      {
+        "name": "种植方式",
+        "type": "categorical",
+        "options": [
+          "新植蔗",
+          "宿根蔗"
+        ],
+        "description": "甘蔗的种植年份类型",
+        "why_important": "宿根蔗比新植蔗发病重，影响是否留宿根的决策"
+      },
+      {
+        "name": "品种抗性",
+        "type": "categorical",
+        "options": [
+          "抗病品种",
+          "感病品种"
+        ],
+        "description": "当前种植甘蔗品种的抗病能力",
+        "why_important": "抗病性差异很大，影响后续品种更换建议"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "轮作计划",
+        "type": "text",
+        "description": "下一季计划种植的作物",
+        "why_important": "用于判断是否可实行轮作以降低病害"
+      },
+      {
+        "name": "田间管理水平",
+        "type": "text",
+        "description": "当前的水肥管理及除草情况",
+        "why_important": "管理差会导致生长不良从而发病多"
+      }
+    ],
+    "clarification_templates": {
+      "发病阶段": "请问目前甘蔗梢头是否已经长出黑色鞭状物？",
+      "种植方式": "这块地是新种植的甘蔗还是宿根蔗？如果是宿根，大概几年了？",
+      "品种抗性": "您目前种植的是哪个甘蔗品种？是否了解其抗病性？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "发病阶段": "初期未出鞭",
+          "种植方式": [
+            "新植蔗",
+            "宿根蔗"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "在病株节间已伸长但尚未长出鞭状物时，立即将病株拔除。无论宿根蔗或新植蔗，在甘蔗齐苗后及伸长前期，使用“绿丰95”植物生长调节剂1：300稀释液喷洒植株，防病抗病并增加产量。加强田间管理，发现病株立即拔除。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法确定是否出鞭，按已形成黑穗处理以防扩散"
+      },
+      {
+        "condition_checks": {
+          "发病阶段": "已形成黑穗",
+          "种植方式": "宿根蔗"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "如果黑穗已形成，拔除的病株应集中烧毁，不可随意丢弃。发病严重的蔗地不留宿根，蔗茎不作种用。有条件的蔗区实行甘蔗与水稻、花生、黄豆或红薯等作物轮作。收获砍蔗时最好用小锄入土低砍，减少病芽的存在。",
+        "follow_up_question": "该地块是否计划继续种植甘蔗？是否需要推荐轮作作物方案？",
+        "fallback_strategy": "若无法轮作，必须严格清理病残体并深翻土壤"
+      }
+    ],
+    "default_response": {
+      "content": "检测到疑似甘蔗黑穗病风险。建议优先选用抗病品种（如热带种）。日常管理中注意避免土壤干旱和芽部受伤。一旦发现异常，请及时确认发病阶段以便采取针对性措施。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "甘蔗赤条黄带蛾防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "生长中后期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "幼虫1-3龄体节黑褐色与黄绿色相间，体背生粗长毛",
+      "幼虫3龄后全体渐呈黑褐色，密生长毛",
+      "末龄幼虫体长45～68毫米，头暗紫红色，气门橘红色",
+      "蔗叶往往仅剩中脉",
+      "幼虫群集取食，常常整齐地排列"
+    ],
+    "triggers": [
+      "5～8月间",
+      "局部蔗区",
+      "成虫具趋光性，夜间活动",
+      "幼虫4龄后进入暴食阶段"
+    ],
+    "reasoning_chain": "如果在5-8月观察到甘蔗叶片仅剩中脉，且发现群集的黑褐色长毛幼虫（末龄头暗紫红色），可判定为赤条黄带蛾危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "infestation_level",
+        "type": "categorical",
+        "options": [
+          "局部发生",
+          "大面积发生"
+        ],
+        "description": "虫害发生的范围面积",
+        "why_important": "决定采用人工捕杀还是化学防治"
+      },
+      {
+        "name": "larval_stage",
+        "type": "categorical",
+        "options": [
+          "1-3龄",
+          "4龄及以上"
+        ],
+        "description": "幼虫的发育龄期",
+        "why_important": "不同龄期取食习性和抗药性不同，影响防治策略"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "weather_condition",
+        "type": "categorical",
+        "options": [
+          "晴天",
+          "雨天",
+          "大风"
+        ],
+        "description": "施药时的天气状况",
+        "why_important": "影响农药药效和安全性"
+      }
+    ],
+    "clarification_templates": {
+      "infestation_level": "请问目前虫害发生的面积是局部还是大面积？",
+      "larval_stage": "请问观察到的幼虫大约处于哪个龄期（体长或颜色特征）？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "infestation_level": "局部发生",
+          "larval_stage": "1-3龄"
+        },
+        "response_type": "complete_solution",
+        "content": "由于虫体大，幼虫具群集性，尤其是3龄前，较易发现。如仅局部发生，建议采用人工捕杀，减少化学农药使用。",
+        "follow_up_question": null,
+        "fallback_strategy": "若人工捕杀不彻底，可转为低浓度喷雾"
+      },
+      {
+        "condition_checks": {
+          "infestation_level": "大面积发生",
+          "larval_stage": "4龄及以上"
+        },
+        "response_type": "complete_solution",
+        "content": "发生面积较大时，必须及时喷药。可选用80％敌敌畏乳油1500倍稀释液，40％特力克1000倍稀释液，2.5％功夫乳油、10％天王星乳油均为3000～5000倍稀释液，40.7％乐斯本乳油1000～1500倍稀释液。",
+        "follow_up_question": null,
+        "fallback_strategy": "若效果不佳，建议轮换不同作用机理的药剂"
+      }
+    ],
+    "default_response": {
+      "content": "信息不足，无法提供精准防治方案。请补充虫害发生面积及幼虫龄期信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

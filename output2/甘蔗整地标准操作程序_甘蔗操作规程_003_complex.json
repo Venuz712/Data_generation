@@ -1,0 +1,115 @@
+{
+  "meta": {
+    "title": "甘蔗整地标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "种植前准备期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "翻地深度40cm左右",
+      "晒地5天以上",
+      "有机肥1-2吨/亩",
+      "地下虫药剂2-5公斤/亩",
+      "土块直径≤2cm",
+      "厢面中间高两侧低"
+    ],
+    "triggers": [
+      "土壤含水量20%以下",
+      "无大范围塑料膜/铁丝",
+      "有机肥需腐熟",
+      "药剂长效6个月左右",
+      "坡差15-30度"
+    ],
+    "reasoning_chain": "如果翻地深度不足20cm且未晒地，则根系深扎受阻；如果有机肥未腐熟或重金属超标，则土壤污染风险高；如果土块过大，则影响覆膜贴合。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤重金属含量",
+        "type": "numeric",
+        "options": [],
+        "description": "动物源有机肥施用前的安全检测指标",
+        "why_important": "防止土壤污染，确保甘蔗食用安全"
+      },
+      {
+        "name": "上一年根系发病情况",
+        "type": "categorical",
+        "options": [
+          "严重",
+          "轻微",
+          "无"
+        ],
+        "description": "决定地下虫药剂用量的关键依据",
+        "why_important": "影响药剂施用量是2公斤还是5公斤/亩"
+      },
+      {
+        "name": "当地降雨量特征",
+        "type": "categorical",
+        "options": [
+          "多雨",
+          "少雨",
+          "适中"
+        ],
+        "description": "影响排水坡差设计的依据",
+        "why_important": "确保雨季快速汇流，避免苗基积水"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "可用机械设备类型",
+        "type": "text",
+        "description": "旋耕机、三铧犁等可用设备",
+        "why_important": "影响翻地效率和土块粉碎程度"
+      },
+      {
+        "name": "预算范围",
+        "type": "categorical",
+        "options": [
+          "高",
+          "中",
+          "低"
+        ],
+        "description": "影响有机肥和药剂的选择",
+        "why_important": "决定是选用商用药剂还是自行复配"
+      }
+    ],
+    "clarification_templates": {
+      "土壤重金属含量": "请问该地块是否已进行过土壤重金属安全检测？",
+      "上一年根系发病情况": "上一季作物根系是否有蛴螬或根线虫等地下害虫发病情况？",
+      "当地降雨量特征": "该基地所在区域雨季降雨量特征如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "上一年根系发病情况": "无",
+          "土壤含水量": "20%以下"
+        },
+        "response_type": "complete_solution",
+        "content": "按标准流程执行：翻地深度40cm，晒地5天，施用有机肥1吨/亩，地下虫药剂2公斤/亩，确保土块直径≤2cm，坡差控制在15-30度。",
+        "follow_up_question": null,
+        "fallback_strategy": "若遇突发降雨，需重新评估晒地时间"
+      },
+      {
+        "condition_checks": {
+          "上一年根系发病情况": "严重",
+          "土壤含水量": "20%以下"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "鉴于上一年发病严重，建议地下虫药剂用量增加至5公斤/亩，并选用长效缓释药剂。有机肥需严格检测重金属。",
+        "follow_up_question": "请确认是否已获取动物源有机肥的重金属检测报告？",
+        "fallback_strategy": "若无法检测，建议改用植物源有机肥"
+      }
+    ],
+    "default_response": {
+      "content": "当前缺少关键环境或历史数据，无法提供精准方案。请补充土壤检测数据及上一年病虫害情况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

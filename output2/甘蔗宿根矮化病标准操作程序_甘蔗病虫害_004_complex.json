@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "甘蔗宿根矮化病标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗病害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗株发育受阻",
+      "宿根发株少",
+      "蔗株矮化",
+      "蔗茎纤弱",
+      "生长不良",
+      "幼嫩蔗茎梢头部生长点之下1厘米左右节部组织橙红色",
+      "成熟蔗茎节部维管束变色（黄变橙红/红褐，逗点状或短线状）"
+    ],
+    "triggers": [
+      "干旱天气",
+      "干旱土壤",
+      "缺少一种至多种元素的土壤",
+      "非灌溉区"
+    ],
+    "reasoning_chain": "如果观察到蔗株矮化、生长不良且无典型外部病害斑点，结合干旱或贫瘠土壤环境，需切开蔗茎检查维管束是否出现橙红色变色，若存在则可判定为宿根矮化病。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前生育期",
+        "type": "categorical",
+        "options": [
+          "种苗期",
+          "幼苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前所处的生长阶段",
+        "why_important": "种苗期可进行热水浸种处理，生长后期则需侧重田间管理"
+      },
+      {
+        "name": "土壤水分状况",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "灌溉充足"
+        ],
+        "description": "种植区域的土壤湿度情况",
+        "why_important": "干旱天气有利于病害发生，影响防治策略的紧迫性"
+      },
+      {
+        "name": "品种类型",
+        "type": "categorical",
+        "options": [
+          "高感品种",
+          "中抗品种",
+          "高抗品种",
+          "未知"
+        ],
+        "description": "种植甘蔗的具体品种",
+        "why_important": "不同品种变色深浅及抗病性不同，影响诊断和长期规划"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "灌溉条件",
+        "type": "categorical",
+        "description": "是否为灌溉区",
+        "why_important": "灌溉区发病通常比非灌溉区轻"
+      },
+      {
+        "name": "工具消毒情况",
+        "type": "boolean",
+        "description": "砍蔗刀等器具是否已消毒",
+        "why_important": "防止病菌通过工具传播"
+      }
+    ],
+    "clarification_templates": {
+      "当前生育期": "请问您的甘蔗目前处于哪个生长阶段（如种苗、幼苗、伸长期等）？",
+      "土壤水分状况": "请问种植区域近期是否干旱，是否有灌溉条件？",
+      "品种类型": "请问您种植的是哪个甘蔗品种？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前生育期": "种苗期",
+          "土壤水分状况": "任意"
+        },
+        "response_type": "complete_solution",
+        "content": "针对种苗期，建议立即进行热水浸种处理。使用50℃热水浸种2小时，或54～58℃热空气处理8小时。同时必须选用无病种苗，建立无病苗圃，防止带病下田。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法进行热处理，必须确保种苗来源无病，并严格消毒砍蔗刀等器具。"
+      },
+      {
+        "condition_checks": {
+          "当前生育期": [
+            "伸长期",
+            "成熟期"
+          ],
+          "土壤水分状况": "干旱"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "田间已发病且环境干旱，建议施足基肥及早追肥，改善土壤营养状况。严重病区应减少宿根蔗的栽培年限和面积。需彻底清除再生蔗，并对器具进行沸水或蒸汽消毒。",
+        "follow_up_question": "请问该地块是否为宿根蔗？是否已确认品种抗病性？",
+        "fallback_strategy": "若无法改善土壤条件，建议轮作或更换抗病品种。"
+      }
+    ],
+    "default_response": {
+      "content": "宿根矮化病无典型外部症状，诊断需切开蔗茎观察维管束变色。目前信息不足以制定精准方案，请补充当前生育期及土壤环境信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

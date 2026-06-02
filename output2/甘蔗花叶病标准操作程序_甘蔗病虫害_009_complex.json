@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "甘蔗花叶病标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "桂糖11号",
+      "F134",
+      "闽糖70/611"
+    ],
+    "growth_stage": "全生育期",
+    "source": "甘蔗花叶病防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "叶片出现绿色与浅黄色相夹杂的短条纹",
+      "条纹呈条形、不正卵形或长圆形",
+      "幼嫩叶片基部病斑明显",
+      "阳光观察病斑更清晰",
+      "部分品种出现变红或坏死"
+    ],
+    "triggers": [
+      "高温少雨天气",
+      "虫媒繁殖活动增强",
+      "幼嫩植株生长阶段",
+      "感病品种种植"
+    ],
+    "reasoning_chain": "如果观察到叶片绿黄相间条纹且处于高温少雨环境，结合幼嫩植株特征，可判定为花叶病",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "病情发展阶段",
+        "type": "categorical",
+        "options": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "description": "病害在植株上的发展程度",
+        "why_important": "影响防治措施选择"
+      },
+      {
+        "name": "当前温度范围",
+        "type": "numeric",
+        "options": [],
+        "description": "种植区域实时温度",
+        "why_important": "高温抑制病害但少雨促进传播"
+      },
+      {
+        "name": "用药历史",
+        "type": "categorical",
+        "options": [
+          "未用药",
+          "已用生物制剂",
+          "已用化学药剂"
+        ],
+        "description": "近期防治措施记录",
+        "why_important": "避免重复用药或产生抗药性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植区域",
+        "type": "text",
+        "description": "具体种植地理位置",
+        "why_important": "不同区域气候差异影响防治策略"
+      },
+      {
+        "name": "前茬作物",
+        "type": "text",
+        "description": "上一季种植作物类型",
+        "why_important": "中间寄主可能影响病害传播"
+      }
+    ],
+    "clarification_templates": {
+      "病情发展阶段": "请问当前甘蔗叶片病斑扩散程度如何？",
+      "当前温度范围": "最近一周平均气温是多少摄氏度？",
+      "用药历史": "近期是否进行过病害防治？使用过哪些药剂？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "病情发展阶段": "初期",
+          "当前温度范围": "25-35℃",
+          "降雨情况": "少雨"
+        },
+        "response_type": "complete_solution",
+        "content": "立即拔除病株并销毁，对砍蔗刀具进行火烤消毒，选用桂糖11号等抗病品种补种，实施温汤浸种处理（52℃浸种20分钟×3次）",
+        "follow_up_question": "",
+        "fallback_strategy": "加强田间巡查，每周检查新发病株"
+      },
+      {
+        "condition_checks": {
+          "病情发展阶段": "后期",
+          "当前温度范围": "＞35℃",
+          "降雨情况": "多雨"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "优先销毁病株并消毒农具，建议暂停灌溉，待天气转晴后补种抗病品种",
+        "follow_up_question": "请问是否已进行过化学防治？具体使用过哪些药剂？",
+        "fallback_strategy": "联系当地植保站获取区域化防治方案"
+      }
+    ],
+    "default_response": {
+      "content": "建议立即联系当地农业技术推广部门进行田间诊断，同时记录发病区域环境参数",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

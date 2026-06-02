@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "title": "甘蔗玉米趾铁甲防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "苗期至分蘖期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "嫩叶心部有小孔（产卵痕迹）",
+      "叶片被害后仅残留上下表皮",
+      "形成大块白色枯斑"
+    ],
+    "triggers": [
+      "3 月成虫开始活动",
+      "5～6 月为害蔗叶",
+      "每公顷卵和幼虫密度达 90 万头（粒）",
+      "幼虫孵化率达 10％"
+    ],
+    "reasoning_chain": "如果在 3-6 月观察到蔗叶心部有小孔或叶片出现大块白色枯斑，且田间调查密度达到阈值，则可判定为玉米趾铁甲危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前虫害密度",
+        "type": "numeric",
+        "description": "每公顷卵和幼虫的数量",
+        "why_important": "决定是否达到用药阈值（90 万头/公顷）"
+      },
+      {
+        "name": "幼虫孵化率",
+        "type": "numeric",
+        "description": "卵孵化为幼虫的百分比",
+        "why_important": "决定最佳施药时机（孵化率达 10％时）"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "天气状况",
+        "type": "categorical",
+        "description": "当前是否露水未干或降雨",
+        "why_important": "影响撒施巴丹原粉的效果"
+      }
+    ],
+    "clarification_templates": {
+      "当前虫害密度": "请问您目前调查的每公顷卵和幼虫密度大约是多少？",
+      "幼虫孵化率": "请问您观察到的幼虫孵化率是否已达到 10％？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "虫害密度": ">= 90 万头/公顷",
+          "幼虫孵化率": ">= 10%"
+        },
+        "response_type": "complete_solution",
+        "content": "达到防治阈值，建议立即用药。可选用锐劲特、米乐尔、百树得、多来宝等农药中的一种，对水 1500～3000 倍，每公顷喷药液 750～900 千克。",
+        "follow_up_question": null,
+        "fallback_strategy": "若化学农药缺货，可改用巴丹原粉与细草木灰拌匀撒施。"
+      },
+      {
+        "condition_checks": {
+          "虫害密度": "< 90 万头/公顷"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "目前密度未达阈值，建议继续监测。请每公顷查蔗 450 株进行折算，关注 4～5 月卵和幼虫密度变化。",
+        "follow_up_question": "是否需要了解具体的调查取样方法？",
+        "fallback_strategy": "加强田间巡查，防止密度激增。"
+      },
+      {
+        "condition_checks": {
+          "用药偏好": "物理/生物防治",
+          "环境条件": "露水未干"
+        },
+        "response_type": "alternative_solution",
+        "content": "可采用每公顷用巴丹原粉 750 千克与细草木灰拌匀，于露水未干时撒施。",
+        "follow_up_question": null,
+        "fallback_strategy": "若露水已干，建议等待至次日清晨或改用喷雾法。"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键虫害密度数据，无法提供精准防治方案。请先进行田间调查，确认每公顷卵和幼虫密度及孵化率。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

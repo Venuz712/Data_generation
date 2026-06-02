@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "title": "甘蔗蔗龟类虫害防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "地下茎基部被咬食形成半球形缺口",
+      "地上部叶片干枯",
+      "心叶枯萎",
+      "嫩叶被大量啮食",
+      "成虫夜间活动有假死性和趋光性"
+    ],
+    "triggers": [
+      "5-6月活动最盛",
+      "7月高温夏蛰",
+      "8月底复苏",
+      "幼虫在蔗根土中越冬",
+      "成虫发生于4-11月",
+      "广西地区1年发生1代"
+    ],
+    "reasoning_chain": "如果观察到甘蔗地下茎基部有半球形缺口且叶片干枯，结合5-6月或8月底的时间节点，可判定为突背或光背蔗龟危害；如果观察到嫩叶被大量啮食且成虫夜间活动有假死性，可判定为大头霉鳃金龟危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "current_growth_stage",
+        "type": "categorical",
+        "options": [
+          "种植期",
+          "生长期",
+          "宿根培土期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "不同阶段适用的防治方法不同，如种植期可用颗粒剂撒施，生长期需喷施或灌穴"
+      },
+      {
+        "name": "infestation_severity",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "虫害发生的严重程度",
+        "why_important": "决定是否需要化学药剂防治或仅采用农业防治措施"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "pesticide_availability",
+        "type": "text",
+        "description": "农户现有的农药种类",
+        "why_important": "确保推荐的药剂方案可执行"
+      }
+    ],
+    "clarification_templates": {
+      "current_growth_stage": "请问您的甘蔗目前处于哪个生长阶段？（种植期、生长期或宿根培土期）",
+      "infestation_severity": "请问目前虫害造成的叶片干枯或啃食情况严重程度如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "current_growth_stage": [
+            "种植期",
+            "宿根培土期"
+          ],
+          "infestation_severity": [
+            "轻度",
+            "中度"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "建议采用预防性措施。下种时每公顷用3％米乐尔颗粒剂60千克或20％益舒宝颗粒剂45千克撒施于种苗上，然后盖土。也可在新植蔗下种或宿根培土期间，每公顷用0.5千克含孢子3.3x101的绿僵菌粉75千克，施于种苗上或蔗蔸间，施后即盖土。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法获取化学药剂，可考虑轮种玉米、水稻、红薯等作物。"
+      },
+      {
+        "condition_checks": {
+          "current_growth_stage": "生长期",
+          "infestation_severity": "重度"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "针对突背蔗龟或光背蔗龟，可在受害蔗株旁挖穴将药灌施，或选用杀螟松或马拉硫磷或辛硫磷均1000倍稀释液喷杀。针对大头霉鳃金龟，可用90％晶体敌百虫600～800倍稀释液喷布蔗叶。",
+        "follow_up_question": "请问您目前是否拥有上述药剂，或是否有特定的农药使用限制？",
+        "fallback_strategy": "若药剂受限，可结合人工捕杀和灯光诱杀。"
+      },
+      {
+        "condition_checks": {
+          "current_growth_stage": "生长期",
+          "infestation_severity": "轻度"
+        },
+        "response_type": "alternative_solution",
+        "content": "建议优先采用非化学防治方法。包括引水淹灌、灯光诱杀、人工捕杀。若为7月高温期，害虫进入夏蛰，可暂缓化学防治，待8月底复苏后再处理。",
+        "follow_up_question": null,
+        "fallback_strategy": "若虫害加重，转为化学防治方案。"
+      }
+    ],
+    "default_response": {
+      "content": "未检测到具体的生长阶段或虫害严重程度信息。建议先确认甘蔗当前生长阶段及虫害具体表现（根部缺口或叶片啃食），以便提供精准防治方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

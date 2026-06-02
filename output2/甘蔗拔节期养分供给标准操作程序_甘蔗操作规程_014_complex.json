@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "title": "甘蔗拔节期养分供给标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "拔节期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "皮壳硬度测试（拇指指甲能按入或出现明显凹痕）",
+      "三叉口处新生茎较短（小于10cm）且颜色暗淡",
+      "叶片出现生理性褐斑、新叶卷曲等中微量元素缺乏症状"
+    ],
+    "triggers": [
+      "滴肥前5天内进行皮壳测试",
+      "高氮高钾方案施用过后10天内观察叶片",
+      "培土期未施肥需在拔节前穴施",
+      "早期氮过量导致倒伏风险"
+    ],
+    "reasoning_chain": "如果在滴肥前5天测试皮壳硬度发现可按压，则判定需高钾；如果三叉口新生茎短于10cm且颜色暗淡，则判定需高氮；如果施后10天出现褐斑卷曲，则判定需中微量元素。若培土期未施肥，拔节前需补施磷钾肥。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤墒情",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "正常"
+        ],
+        "description": "当前田间土壤水分含量状态",
+        "why_important": "影响滴肥吸收效率及稀释倍数的实际效果"
+      },
+      {
+        "name": "前期施肥记录",
+        "type": "boolean",
+        "description": "培土期是否已经进行过施肥",
+        "why_important": "决定拔节前是否需要额外穴施基肥"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "近期天气预报",
+        "type": "text",
+        "description": "未来3-5天的降雨预测",
+        "why_important": "大雨可能冲刷肥料或影响滴灌系统运行"
+      },
+      {
+        "name": "滴灌系统压力",
+        "type": "numeric",
+        "description": "当前滴带工作压力数值",
+        "why_important": "确保流速均匀性CU≥85%"
+      }
+    ],
+    "clarification_templates": {
+      "土壤墒情": "请问当前田块土壤干湿程度如何？是干旱、湿润还是正常？",
+      "前期施肥记录": "请问在培土阶段是否已经施加过肥料？",
+      "近期天气预报": "未来几天是否有降雨计划？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "皮壳硬度": "软（指甲可压入）",
+          "新生茎状态": "任意"
+        },
+        "response_type": "complete_solution",
+        "content": "检测到皮壳较软，建议执行高钾方案。每次滴肥7.5–15 kg，配方为0.7kg氮；0.4kg磷；2.8kg钾。滴肥稀释倍数需≥300倍，确保流速均匀性CU≥85%。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无高钾复合肥，可用磷酸二氢钾替代部分钾源"
+      },
+      {
+        "condition_checks": {
+          "皮壳硬度": "硬",
+          "新生茎状态": "短且暗（<10cm）"
+        },
+        "response_type": "complete_solution",
+        "content": "检测到新生茎生长缓慢且颜色暗淡，建议执行高氮方案。必须执行两次高氮方案，配方为2.5kg氮；0.5kg磷；0.5kg钾。严禁拔节前大量用氮以防倒伏。",
+        "follow_up_question": null,
+        "fallback_strategy": "若氮肥不足，可分次少量追施尿素"
+      },
+      {
+        "condition_checks": {
+          "叶片症状": "褐斑或卷曲",
+          "施药历史": "高氮高钾后10天内"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "观察到中微量元素缺乏症状，建议补充中微量元素方案（0.75kg磷；1.2kg钙；0.7kg镁；1.6kg硅）。请确认是否已排除病虫害因素。",
+        "follow_up_question": "请确认叶片症状是否伴随虫害痕迹？",
+        "fallback_strategy": "若无法确定，先喷施通用型叶面肥观察反应"
+      }
+    ],
+    "default_response": {
+      "content": "当前缺少关键生长指标信息。请提供甘蔗皮壳硬度测试结果、三叉口新生茎长度及颜色、以及近期叶片健康状况，以便制定精准养分方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "title": "甘蔗台风水涝灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "低洼蔗地积水",
+      "土壤水分过高",
+      "甘蔗根系缺氧风险",
+      "烂根死亡风险"
+    ],
+    "triggers": [
+      "台风",
+      "强降雨",
+      "低洼地形",
+      "排水不畅"
+    ],
+    "reasoning_chain": "如果遭遇台风强降雨且蔗地位于低洼处，观察到田间积水，则可判定为水涝灾害风险，需立即排水。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "积水深度",
+        "type": "numeric",
+        "description": "田间当前积水深度",
+        "why_important": "决定排水紧迫性和机械作业可行性"
+      },
+      {
+        "name": "土壤质地",
+        "type": "categorical",
+        "options": [
+          "沙土",
+          "壤土",
+          "黏土"
+        ],
+        "description": "土壤透水性分类",
+        "why_important": "影响排水速度和根系呼吸能力"
+      },
+      {
+        "name": "甘蔗生育期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前生长阶段",
+        "why_important": "不同阶段耐涝能力不同"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "排水设施现状",
+        "type": "text",
+        "description": "现有沟渠情况",
+        "why_important": "评估是否需要新建或疏通"
+      }
+    ],
+    "clarification_templates": {
+      "积水深度": "请问目前田间积水深度大约是多少厘米？",
+      "土壤质地": "请问您的蔗地土壤类型是沙土、壤土还是黏土？",
+      "甘蔗生育期": "请问甘蔗当前处于苗期、分蘖期、伸长期还是成熟期？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "积水深度": "< 10cm",
+          "土壤质地": "沙土"
+        },
+        "response_type": "complete_solution",
+        "content": "立即开挖排水沟，利用自然坡度排水，保持土壤透气性，促进蔗根扎稳。",
+        "fallback_strategy": "若自然排水不畅，需使用水泵辅助"
+      },
+      {
+        "condition_checks": {
+          "积水深度": "> 30cm",
+          "土壤质地": "黏土"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "立即开挖深沟排水，减少土壤水分，避免浸泡时间过长。",
+        "follow_up_question": "请问甘蔗叶片是否出现萎蔫发黄或倒伏现象？",
+        "fallback_strategy": "若根系已腐烂，需考虑补种或改种"
+      },
+      {
+        "condition_checks": {
+          "积水深度": "已排干",
+          "天气状况": "转晴"
+        },
+        "response_type": "alternative_solution",
+        "content": "排水后及时中耕松土，喷施叶面肥，促进植株恢复生长。",
+        "fallback_strategy": "若出现病害，需配合杀菌剂处理"
+      }
+    ],
+    "default_response": {
+      "content": "请提供当前积水深度及土壤类型以便制定具体排水方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "风灾1.txt"
+}

@@ -1,0 +1,99 @@
+{
+  "meta": {
+    "title": "甘蔗压苗促分蘖标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "苗期 (20-30 cm, 6-8 叶)",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "苗高 20-30 cm",
+      "叶片数 6-8 张正常展开叶",
+      "需抑制主茎促分蘖"
+    ],
+    "triggers": [
+      "统一灌根方式",
+      "每株用水/肥混合液 500 mL",
+      "药剂配比 1:2:2:1",
+      "使用标准化工具"
+    ],
+    "reasoning_chain": "如果观察到苗高达到 20-30 cm 且展开叶 6-8 张，且目标是促进分蘖，则判定为压苗适宜期，需执行灌根操作。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "药剂具体名称",
+        "type": "text",
+        "description": "生根药剂、防病毒药剂、压苗药剂的具体商品名或成分",
+        "why_important": "确保药剂安全性及兼容性，避免药害"
+      },
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "积水"
+        ],
+        "description": "灌根前的土壤水分状况",
+        "why_important": "影响药剂吸收效果及是否造成僵苗"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "田间坡度",
+        "type": "text",
+        "description": "种植地块的倾斜程度",
+        "why_important": "影响灌根液的分布均匀性"
+      }
+    ],
+    "clarification_templates": {
+      "药剂具体名称": "请问您计划使用的生根、防病毒及压苗药剂的具体名称或成分是什么？",
+      "土壤湿度": "当前地块的土壤湿度情况如何？是干旱、湿润还是有积水？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "苗高": "20-30 cm",
+          "叶片数": "6-8 张",
+          "工具状态": "标准"
+        },
+        "response_type": "complete_solution",
+        "content": "符合压苗标准。请统一采用灌根方式，每株严格按照 500 mL 进行灌根。药剂配比需遵循生根药剂：防病毒药剂：压苗药剂：平衡肥=1:2:2:1。压苗后 10 天验证分蘖株数是否较未压苗区提高≥80%。",
+        "follow_up_question": null,
+        "fallback_strategy": "无"
+      },
+      {
+        "condition_checks": {
+          "苗高": "20-30 cm",
+          "叶片数": "6-8 张",
+          "工具状态": "非标准"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "苗情符合压苗时机，但灌根工具不标准会导致流量偏差。建议先统一制作标准化工具后再进行操作，避免流量不均影响效果。",
+        "follow_up_question": "您目前是否有可用的标准灌根工具？若无，预计何时能制作完成？",
+        "fallback_strategy": "临时采用人工量杯控制每株 500 mL"
+      },
+      {
+        "condition_checks": {
+          "灌根量": "过量",
+          "症状": "僵苗"
+        },
+        "response_type": "alternative_solution",
+        "content": "若已出现过量灌根导致僵苗，常规压苗方案无效。需评估僵苗程度，严重情况下建议重新种植。",
+        "follow_up_question": "僵苗现象是否普遍？具体比例是多少？",
+        "fallback_strategy": "加强水分管理，尝试叶面肥补救"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定压苗方案，请补充苗高、叶片数及工具准备情况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

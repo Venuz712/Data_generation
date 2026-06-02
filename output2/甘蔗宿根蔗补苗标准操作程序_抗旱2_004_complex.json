@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "甘蔗宿根蔗补苗标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "宿根期",
+    "source": "甘蔗灾害应对",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "田间缺株",
+      "断垄",
+      "出苗不均匀"
+    ],
+    "triggers": [
+      "宿根发芽率低",
+      "病虫害导致死苗",
+      "自然灾害影响"
+    ],
+    "reasoning_chain": "如果宿根蔗田间出现缺株断垄现象，且缺苗率影响产量，则判定需要进行补苗操作。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "缺苗率",
+        "type": "numeric",
+        "options": [],
+        "description": "田间缺苗的百分比",
+        "why_important": "决定补苗的紧迫性和方式"
+      },
+      {
+        "name": "补苗时机",
+        "type": "categorical",
+        "options": [
+          "萌芽初期",
+          "分蘖期",
+          "生长后期"
+        ],
+        "description": "当前甘蔗的生长阶段",
+        "why_important": "不同阶段补苗成活率不同"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "土壤墒情",
+        "type": "categorical",
+        "description": "土壤湿度状况",
+        "why_important": "影响补苗后的成活率"
+      },
+      {
+        "name": "补苗材料",
+        "type": "categorical",
+        "description": "用于补苗的材料类型",
+        "why_important": "决定是移苗还是补种"
+      }
+    ],
+    "clarification_templates": {
+      "缺苗率": "请问目前田间缺苗的大致比例是多少？",
+      "补苗时机": "请问甘蔗目前处于哪个生长阶段？",
+      "土壤墒情": "当前土壤湿度如何？是否干旱？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "缺苗率": "<10%",
+          "补苗时机": "萌芽初期"
+        },
+        "response_type": "complete_solution",
+        "content": "建议进行移苗补植。选择生长健壮的多余苗株，带土移栽至缺株处，移栽后及时浇水保湿，促进成活。",
+        "follow_up_question": null,
+        "fallback_strategy": "若移苗困难，可考虑补种芽苗"
+      },
+      {
+        "condition_checks": {
+          "缺苗率": ">30%",
+          "补苗时机": "分蘖期"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "缺苗严重且已过最佳补苗期，移苗成活率低。建议评估是否改种或保留现状。",
+        "follow_up_question": "请问是否有备用种苗？是否考虑改种其他作物？",
+        "fallback_strategy": "加强水肥管理，促进现有植株分蘖"
+      }
+    ],
+    "default_response": {
+      "content": "原文信息较少，无法提供具体操作方案。请补充田间缺苗情况及生长阶段信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱2.txt"
+}

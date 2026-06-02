@@ -1,0 +1,117 @@
+{
+  "meta": {
+    "title": "甘蔗成熟期灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "成熟期/中后期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "极端低温天气预警",
+      "霜冻为害表现（叶片枯黄、茎秆受损）",
+      "台风多发气候信号"
+    ],
+    "triggers": [
+      "成熟期遭遇低温",
+      "霜冻前未采取保护措施",
+      "台风季节临近",
+      "宿根蔗未保留蔗叶"
+    ],
+    "reasoning_chain": "如果监测到成熟期有极端低温预报，则判定为霜冻风险；如果已观察到甘蔗受冻害表现，则判定为灾后恢复阶段；如果处于台风多发期，则需加强中后期管理。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "种植类型",
+        "type": "categorical",
+        "options": [
+          "新植蔗",
+          "宿根蔗"
+        ],
+        "description": "甘蔗的种植方式，决定是否需要保留蔗叶保护芽点",
+        "why_important": "宿根蔗建议保留蔗叶保护宿根蔗芽，新植蔗策略不同"
+      },
+      {
+        "name": "预计最低温度",
+        "type": "numeric",
+        "options": [],
+        "description": "天气预报中的预计最低气温数值",
+        "why_important": "用于判断是否达到需要灌水防霜冻的阈值"
+      },
+      {
+        "name": "受灾程度",
+        "type": "categorical",
+        "options": [
+          "未受灾",
+          "轻度受灾",
+          "重度受灾"
+        ],
+        "description": "甘蔗当前受灾害影响的程度",
+        "why_important": "决定是采取预防措施还是优先砍运入榨"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "土壤湿度",
+        "type": "text",
+        "description": "当前蔗田的土壤干湿状况",
+        "why_important": "影响灌水防霜冻的效果评估"
+      },
+      {
+        "name": "糖分积累情况",
+        "type": "text",
+        "description": "甘蔗当前的糖分积累进度",
+        "why_important": "用于评估是否处于糖分积累关键期"
+      }
+    ],
+    "clarification_templates": {
+      "种植类型": "请问您的甘蔗是新种植的，还是宿根蔗？",
+      "预计最低温度": "当地天气预报显示的预计最低气温是多少度？",
+      "受灾程度": "目前甘蔗是否已经出现了冻害或台风损伤？程度如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "disaster_type": "霜冻",
+          "timing": "发生前",
+          "planting_type": "宿根蔗"
+        },
+        "response_type": "complete_solution",
+        "content": "1. 密切关注天气预报，做好防霜冻准备。2. 有条件的蔗区在霜冻前进行蔗田灌水，增加地温。3. 保留蔗叶，保护宿根蔗芽。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无灌水条件，建议覆盖秸秆或薄膜保温"
+      },
+      {
+        "condition_checks": {
+          "disaster_type": "霜冻",
+          "timing": "发生后",
+          "damage_level": "重度"
+        },
+        "response_type": "complete_solution",
+        "content": "1. 优先安排受冻害甘蔗的砍运。2. 尽快入榨，减轻损失。3. 检查宿根蔗芽受损情况，制定补种或管理计划。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法及时入榨，需进行田间覆盖减少进一步冻害"
+      },
+      {
+        "condition_checks": {
+          "disaster_type": "台风",
+          "timing": "多发期"
+        },
+        "response_type": "complete_solution",
+        "content": "1. 充分认识中后期管理重要性。2. 抓住糖分积累关键期，落实技术措施。3. 有效应对不利气候影响，确保稳产增产。",
+        "follow_up_question": null,
+        "fallback_strategy": "加强排水防涝，防止倒伏"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定具体灾害应对方案。请提供具体的灾害类型（霜冻或台风）、甘蔗种植类型及当前受灾情况，以便提供针对性建议。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻2.txt"
+}

@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "甘蔗立竹标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "缓苗至炼苗期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "cultivation_points": [
+      "中竹规格达标 (直径≥5cm, 高度≥2m)",
+      "布局合理 (行头两根, 间隔6m两侧各1根, 中间≤8m)",
+      "稳固度合格 (埋深达标, 倾斜角度≤30°)"
+    ],
+    "suitable_conditions": [
+      "缓苗至炼苗期",
+      "人工充足",
+      "炼苗结束前完成"
+    ],
+    "reasoning_chain": "如果在缓苗至炼苗期且人工充足，需检查竹子规格及布局是否符合标准，并在炼苗结束前完成稳固检测，若竹子松动需加固。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "竹子埋深单位",
+        "type": "categorical",
+        "options": [
+          "米 (m)",
+          "厘米 (cm)"
+        ],
+        "description": "竹子埋入土壤的深度单位",
+        "why_important": "原文提及0.5cm疑似笔误，实际应为0.5m，影响稳固性判断"
+      },
+      {
+        "name": "土壤质地",
+        "type": "categorical",
+        "options": [
+          "沙土",
+          "壤土",
+          "黏土"
+        ],
+        "description": "种植地的土壤类型",
+        "why_important": "不同土壤抓地力不同，影响竹子埋深和稳固度要求"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "拉绳规格",
+        "type": "text",
+        "description": "后续拉绳使用的材料规格",
+        "why_important": "立竹是为了后续拉绳，需匹配绳索强度"
+      },
+      {
+        "name": "风力等级",
+        "type": "numeric",
+        "description": "当地近期平均风力",
+        "why_important": "风力大时需增加埋深或加固"
+      }
+    ],
+    "clarification_templates": {
+      "竹子埋深单位": "请问竹子埋深是指0.5米还是0.5厘米？通常建议为0.5米以确保稳固。",
+      "土壤质地": "请问种植地的土壤类型是沙土、壤土还是黏土？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "时间阶段": "缓苗至炼苗期",
+          "竹子规格": "符合 (直径≥5cm, 高度≥2m)",
+          "布局": "符合 (间隔≤8m)"
+        },
+        "response_type": "complete_solution",
+        "content": "当前条件符合立竹标准。请立即执行立竹操作：每行头两根中竹，间隔6米在左右两侧再立一根，中间间隔不得超过8米。确保竹子埋深≥0.5米（需确认单位），倾斜角度≤30°。在炼苗结束前完成，并安排基地长进行稳固检测，抽查10%合格率需≥95%。",
+        "follow_up_question": null,
+        "fallback_strategy": "若检测不合格，需重新加固。"
+      },
+      {
+        "condition_checks": {
+          "时间阶段": "缓苗至炼苗期",
+          "竹子状态": "松动",
+          "环境条件": "人工充足"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "检测到竹子松动，需增加埋深或进行加固处理。请确认当前埋深具体数值及土壤情况。",
+        "follow_up_question": "请问竹子松动的主要原因是什么？是埋深不足还是土壤过松？",
+        "fallback_strategy": "若无法立即加固，需增加临时支撑物防止倒伏。"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定立竹方案。请补充立竹的时间阶段、竹子规格及当前稳固情况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

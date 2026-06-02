@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "甘蔗梢腐病标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "梢部肥厚带至生长点距离大的品种",
+      "抗病性强品种"
+    ],
+    "growth_stage": "全生育期",
+    "source": "甘蔗梢腐病防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "心叶基部感病，叶片腐烂，中脉完好",
+      "死尾蔗（未伸出三叉口的心叶完全腐烂，没有心叶长出）",
+      "梢部坏死，组织变黑褐色腐烂",
+      "节间弯曲变形，出现楔形裂口，形成梯级状",
+      "扫帚蔗（没有受害的组织，侧芽萌发生长）"
+    ],
+    "triggers": [
+      "高温高湿天气",
+      "种植过密",
+      "过量施氮肥",
+      "生长过旺，组织柔嫩",
+      "久旱遇雨或干旱后灌水",
+      "品种抗病性弱"
+    ],
+    "reasoning_chain": "如果观察到心叶基部腐烂且中脉完好，结合高温高湿环境，可判定为轻度发病；若发现死尾蔗或扫帚蔗形态，且田间种植过密或氮肥过量，则可判定为中重度梢腐病。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前病情程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "病害在田间的表现阶段",
+        "why_important": "决定是否需要砍除病株及用药强度"
+      },
+      {
+        "name": "近期天气状况",
+        "type": "categorical",
+        "options": [
+          "高温多雨",
+          "干旱",
+          "晴朗"
+        ],
+        "description": "未来几天的气象预测",
+        "why_important": "影响喷药效果及病害流行趋势"
+      },
+      {
+        "name": "施肥历史",
+        "type": "text",
+        "options": [],
+        "description": "近期氮肥施用情况",
+        "why_important": "判断是否因过量施氮导致组织柔嫩易感病"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植密度",
+        "type": "categorical",
+        "description": "田间植株拥挤程度",
+        "why_important": "过密会加重病害传播"
+      },
+      {
+        "name": "剥叶管理",
+        "type": "boolean",
+        "description": "是否进行适当剥叶",
+        "why_important": "剥叶可降低发病率"
+      }
+    ],
+    "clarification_templates": {
+      "当前病情程度": "请问目前甘蔗梢部的症状是仅心叶基部腐烂，还是已经出现死尾或扫帚蔗现象？",
+      "近期天气状况": "未来一周当地是否有高温多雨天气？",
+      "施肥历史": "最近一次追施氮肥是什么时候，用量如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前病情程度": "轻度",
+          "近期天气状况": "高温多雨"
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即采取化学防治与农业措施结合。在高温多雨季节，对生长旺盛的蔗地，在发病初期喷药防治。可用50％多菌灵或苯来特可湿性粉剂1000倍稀释液，或1：1：100的波尔多液喷雾心叶。同时注意合理施肥，避免过施速效氮肥，适当剥叶以减少病菌滋生。",
+        "follow_up_question": null,
+        "fallback_strategy": "若喷药后3天症状无改善，需重新评估病情程度。"
+      },
+      {
+        "condition_checks": {
+          "当前病情程度": "重度",
+          "近期天气状况": "任意"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "对于重度发病植株，必须砍除病株，减少病菌传播源。对于周围健康植株，需加强监测并预防性喷药。由于重度感染可能导致产量严重损失，建议确认田间具体受损比例以评估是否需要补种。",
+        "follow_up_question": "请问田间重度发病植株的比例大概是多少？是否考虑补种？",
+        "fallback_strategy": "若无法确定发病比例，优先执行砍除病株和全田预防性喷药。"
+      }
+    ],
+    "default_response": {
+      "content": "检测到甘蔗梢腐病风险，但缺乏关键诊断信息。为了提供精准方案，请补充当前甘蔗的发病症状描述（如心叶状态、是否有死尾等）以及近期的天气和施肥情况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

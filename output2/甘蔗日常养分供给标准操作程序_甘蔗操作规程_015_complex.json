@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "甘蔗日常养分供给标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "炼苗后全生育期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "日常养分供给需求",
+      "叶尖灼伤（过量施肥症状）",
+      "植株生长状态异常"
+    ],
+    "triggers": [
+      "炼苗之后阶段",
+      "气候条件变化",
+      "单次施肥量超过15千克",
+      "土壤水分不足"
+    ],
+    "reasoning_chain": "如果处于炼苗后阶段且需日常养分供给，则根据生长和气候调整施肥，单次不超过15kg；若观察到叶尖灼伤，则判定为施肥过量，需立即灌溉稀释。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "肥料类型",
+        "type": "categorical",
+        "options": [
+          "氮肥",
+          "磷肥",
+          "钾肥",
+          "复合肥"
+        ],
+        "description": "当前施用的肥料种类",
+        "why_important": "不同肥料过量造成的伤害程度和稀释方式略有不同"
+      },
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "积水"
+        ],
+        "description": "当前土壤含水量状况",
+        "why_important": "影响灌溉稀释的效果和速度"
+      },
+      {
+        "name": "具体生育期",
+        "type": "categorical",
+        "options": [
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗具体的生长阶段",
+        "why_important": "不同阶段对养分敏感度不同"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "历史施肥记录",
+        "type": "text",
+        "description": "最近一次施肥的时间和用量",
+        "why_important": "判断累积过量风险"
+      }
+    ],
+    "clarification_templates": {
+      "肥料类型": "请问您目前使用的是哪种类型的肥料？",
+      "土壤湿度": "当前田间的土壤湿度情况如何？",
+      "具体生育期": "甘蔗目前处于哪个具体的生长阶段？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "症状表现": "无叶尖灼伤",
+          "施肥阶段": "炼苗后日常供给"
+        },
+        "response_type": "complete_solution",
+        "content": "根据植株实际生长情况以及气候情况进行因地制宜的操作，每次建议施用肥料不超过15千克。请密切关注天气变化，避免在高温干旱时段施肥。",
+        "follow_up_question": null,
+        "fallback_strategy": "若不确定生长情况，建议先进行小面积试验。"
+      },
+      {
+        "condition_checks": {
+          "症状表现": "叶尖灼伤",
+          "施肥阶段": "施肥后短期内"
+        },
+        "response_type": "complete_solution",
+        "content": "判定为施肥过量。请立即加大灌溉稀释，降低土壤溶液浓度。建议暂停施肥3-5天，观察植株恢复情况。",
+        "follow_up_question": null,
+        "fallback_strategy": "若灌溉后症状未缓解，需考虑排水换土。"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定精准方案。请补充甘蔗当前的具体生长阶段、土壤湿度及是否有异常症状。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

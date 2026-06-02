@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "title": "甘蔗白蚁防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "受害蔗茎被蛀成许多不规则的孔道",
+      "蔗株枯萎",
+      "发现地下蚁路",
+      "气温闷热雷雨前后傍晚有翅成虫成群飞出"
+    ],
+    "triggers": [
+      "气温闷热、雷雨前后的傍晚",
+      "3～4 月白蚁开始活动",
+      "土壤地下 1～2 米深处筑巢",
+      "有翅蚁趋光性环境"
+    ],
+    "reasoning_chain": "如果观察到蔗株枯萎且蔗茎有不规则孔道，同时发现地下蚁路或白蚁活动，则可判定为白蚁危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "种植阶段",
+        "type": "categorical",
+        "options": [
+          "种植前",
+          "生长期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "不同阶段适用不同的防治方法（拌种/毒土 vs 挖巢）"
+      },
+      {
+        "name": "危害程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "重度"
+        ],
+        "description": "白蚁危害的严重程度",
+        "why_important": "决定是否需要挖巢或仅用化学防治"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "土壤类型",
+        "type": "categorical",
+        "options": [
+          "沙土",
+          "壤土",
+          "黏土"
+        ],
+        "description": "田间土壤质地",
+        "why_important": "影响白蚁筑巢深度和药剂渗透"
+      }
+    ],
+    "clarification_templates": {
+      "种植阶段": "请问甘蔗目前处于种植前还是生长期？",
+      "危害程度": "请问是否已经发现蔗株枯萎或蚁路？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "种植阶段": "种植前",
+          "危害状态": "预防"
+        },
+        "response_type": "complete_solution",
+        "content": "采用拌种法或毒土撒施法。拌种法：用乐斯本乳油 0.5 千克对水 50 千克加黄泥调成浆，粘着蔗种后播种。毒土撒施法：每公顷用 3％米乐尔颗粒剂或 20％益舒宝颗粒剂 45～60 千克拌泥和基肥施于条沟内。",
+        "follow_up_question": "",
+        "fallback_strategy": "若无法获取药剂，可考虑人工挖巢"
+      },
+      {
+        "condition_checks": {
+          "种植阶段": "生长期",
+          "危害状态": "已发现蚁路"
+        },
+        "response_type": "complete_solution",
+        "content": "采用挖巢法。从蚁路跟踪找到主巢挖去，这是消灭蚁群的根本办法。主巢挖掉后，可用 85％亚砷酸、10％水杨酸、5％红铁氧混合，将药粉喷到蚁路上，让白蚁相互舐吮扩散至整个蚁群而中毒死亡。",
+        "follow_up_question": "",
+        "fallback_strategy": "若无法找到主巢，加强毒土撒施"
+      }
+    ],
+    "default_response": {
+      "content": "信息不足，无法提供精准方案。请补充甘蔗种植阶段及当前危害情况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "title": "甘蔗雨后查苗补种标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "桂糖49",
+      "桂糖47",
+      "桂辐98－296"
+    ],
+    "growth_stage": "苗期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "缺苗严重（蔗垄间隙60cm以上）",
+      "雨后苗情受损"
+    ],
+    "triggers": [
+      "降雨后",
+      "缺苗间隙大于60cm"
+    ],
+    "reasoning_chain": "如果雨后发现蔗垄缺苗间隙超过60cm，则判定为需要补种。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤墒情",
+        "type": "categorical",
+        "options": [
+          "过湿",
+          "适宜",
+          "过干"
+        ],
+        "description": "补种时的土壤湿度状态",
+        "why_important": "土壤过湿会导致烂种，过干影响成活，需确认是否适合立即补种"
+      },
+      {
+        "name": "补种时间窗口",
+        "type": "numeric",
+        "options": [],
+        "description": "距离降雨结束的小时数",
+        "why_important": "雨后土壤状态变化快，需尽快确定补种时机"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "病虫害历史",
+        "type": "boolean",
+        "description": "该地块是否有过严重病虫害",
+        "why_important": "影响浸种包衣药剂的选择"
+      }
+    ],
+    "clarification_templates": {
+      "土壤墒情": "当前雨后土壤是否积水或过于泥泞？",
+      "补种时间窗口": "距离降雨结束已经过去了多长时间？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "缺苗间隙": ">60cm",
+          "品种可用性": "有耐荫品种"
+        },
+        "response_type": "complete_solution",
+        "content": "采用耐荫品种（桂糖49、桂糖47或桂辐98－296）＋上部芽段＋浸种包衣方式进行补种，确保基本苗达5000苗／亩以上。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无耐荫品种，参考备选方案"
+      },
+      {
+        "condition_checks": {
+          "缺苗间隙": ">60cm",
+          "品种可用性": "无耐荫品种"
+        },
+        "response_type": "alternative_solution",
+        "content": "采用种植甘蔗脱毒健康种苗的方式进行补种，尽量确保基本苗达5000苗／亩以上。",
+        "follow_up_question": null,
+        "fallback_strategy": "联系当地种苗站获取健康种苗"
+      }
+    ],
+    "default_response": {
+      "content": "若缺苗间隙小于60cm，建议暂不补种，加强水肥管理促进现有苗生长，或根据田间实际情况咨询当地农技人员。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱1.txt"
+}

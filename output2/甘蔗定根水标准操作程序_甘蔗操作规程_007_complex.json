@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "title": "甘蔗定根水标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "种植期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "栽前滴灌一次",
+      "栽时边栽边滴",
+      "种植穴充分湿润",
+      "表层土壤出现泥浆状",
+      "根系白根发育比例低于90%"
+    ],
+    "triggers": [
+      "总阀管超过0.5亩需人工灌水",
+      "沙壤土需增加浇水量",
+      "每株定根水量约500mL",
+      "栽后1小时内水源到达种植穴",
+      "避免局部积水导致根系缺氧"
+    ],
+    "reasoning_chain": "如果观察种植穴未湿润或表层无泥浆状，且栽后1小时内未供水，则判定为定根水不足；若出现局部积水，则判定为水量过大导致根系缺氧。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "soil_type",
+        "type": "categorical",
+        "options": [
+          "沙壤土",
+          "壤土",
+          "黏土"
+        ],
+        "description": "种植地块的土壤质地类型",
+        "why_important": "沙壤土保水性差需要更多水分，黏土排水差需控制水量"
+      },
+      {
+        "name": "irrigation_system",
+        "type": "categorical",
+        "options": [
+          "滴灌",
+          "人工灌水",
+          "沟灌"
+        ],
+        "description": "当前使用的灌溉设施类型",
+        "why_important": "不同灌溉方式的水量控制和效率不同，影响定根水执行方案"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "planting_density",
+        "type": "text",
+        "description": "每亩种植株数",
+        "why_important": "影响单位面积总需水量计算"
+      }
+    ],
+    "clarification_templates": {
+      "soil_type": "请问您种植地的土壤类型主要是沙壤土、壤土还是黏土？",
+      "irrigation_system": "当前主要使用的灌溉方式是滴灌还是人工灌水？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "soil_type": "沙壤土",
+          "stage": "种植期"
+        },
+        "response_type": "complete_solution",
+        "content": "针对沙壤土，建议适当增加定根水量，确保每株超过500mL。栽苗时边栽边滴，保证种植穴充分湿润至泥浆状，防止水分过快流失影响成活率。",
+        "follow_up_question": "",
+        "fallback_strategy": "若无法增加水量，建议覆盖地膜减少蒸发"
+      },
+      {
+        "condition_checks": {
+          "symptom": "局部积水",
+          "environment": "低洼地"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "检测到可能存在积水风险，请立即停止该区域灌水，并检查排水沟是否通畅。单株水量需严格控制，避免根系缺氧腐烂。",
+        "follow_up_question": "请确认当前地块是否有排水设施，以及积水持续了多久？",
+        "fallback_strategy": "若积水严重，需进行人工排涝并松土透气"
+      }
+    ],
+    "default_response": {
+      "content": "为确保定根水效果，请先确认您的土壤类型及当前灌溉方式。一般标准为栽后1小时内种植穴充分湿润，表层呈泥浆状，每株约500mL。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

@@ -1,0 +1,99 @@
+{
+  "meta": {
+    "title": "甘蔗宿根及秋植蔗种植标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "收获及宿根管理期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗头破裂",
+      "蔗桩露出地面",
+      "宿根萌发率低",
+      "虫害高发"
+    ],
+    "triggers": [
+      "砍收高度过高",
+      "砍收工具不当",
+      "留桩暴露土壤外",
+      "未进行低砍处理"
+    ],
+    "reasoning_chain": "如果观察到蔗桩露出地面或蔗头破裂，且砍收高度未控制在入土3-5厘米以内，则可判定为操作不当，易导致虫害及减产。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "积水"
+        ],
+        "description": "砍收时的土壤水分状况",
+        "why_important": "影响砍收工具的使用效果及蔗头愈合"
+      },
+      {
+        "name": "病虫害历史",
+        "type": "categorical",
+        "options": [
+          "无",
+          "轻度",
+          "重度"
+        ],
+        "description": "该地块过往的虫害发生情况",
+        "why_important": "决定是否需要额外的病虫害防治措施"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植区域",
+        "type": "text",
+        "description": "具体的地理位置或气候带",
+        "why_important": "不同区域气候影响宿根萌发速度"
+      },
+      {
+        "name": "前茬作物",
+        "type": "text",
+        "description": "上一季种植的作物类型",
+        "why_important": "影响土壤养分及病虫害残留"
+      }
+    ],
+    "clarification_templates": {
+      "土壤湿度": "请问当前蔗地的土壤湿度情况如何？是干旱、湿润还是积水？",
+      "病虫害历史": "该地块在过去是否有严重的甘蔗虫害发生记录？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "种植类型": "宿根蔗",
+          "操作阶段": "砍收期"
+        },
+        "response_type": "complete_solution",
+        "content": "建议采用小锄低砍技术，将甘蔗在平地面或入土3～5厘米处砍断。确保防止蔗头破裂，砍收后的蔗桩不露出地面。此操作可增加当年4%～6%的产量，并有效促进翌年宿根蔗萌发及防治虫害。",
+        "follow_up_question": null,
+        "fallback_strategy": "若工具无法实现低砍，建议人工修整蔗桩使其低于地面。"
+      },
+      {
+        "condition_checks": {
+          "种植类型": "秋植蔗",
+          "操作阶段": "种植期"
+        },
+        "response_type": "complete_solution",
+        "content": "重视秋植蔗的种植管理，参照宿根蔗标准，注意留桩处理。确保种植深度适宜，避免蔗头暴露。低砍或深植有助于提高成活率及后续产量。",
+        "follow_up_question": null,
+        "fallback_strategy": "若土壤过于干旱，建议先灌溉后种植。"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以提供精准指导。请确认您目前处于甘蔗的哪个生长阶段（如：宿根收获、秋植种植、生长期等）以及是否存在具体的病虫害症状。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "砍运1.txt"
+}

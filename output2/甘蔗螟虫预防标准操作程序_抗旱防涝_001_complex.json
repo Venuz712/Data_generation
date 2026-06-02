@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "title": "甘蔗螟虫预防标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "未提及具体危害症状，侧重预防性施药",
+      "2代螟虫发生风险"
+    ],
+    "triggers": [
+      "2代螟虫发生期",
+      "未提及具体环境诱因"
+    ],
+    "reasoning_chain": "如果处于2代螟虫发生高峰期且未进行前期防控，则建议进行根施药剂预防，并配合无人机统防统治。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "药剂名称",
+        "type": "categorical",
+        "options": [
+          "杀虫双",
+          "氯虫苯甲酰胺",
+          "其他颗粒剂"
+        ],
+        "description": "具体用于根施的农药品种",
+        "why_important": "不同药剂对螟虫的持效期和安全性不同"
+      },
+      {
+        "name": "虫害基数",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "田间螟虫危害的预估比例",
+        "why_important": "决定是否需要加大剂量或增加施药次数"
+      },
+      {
+        "name": "当前生育期",
+        "type": "categorical",
+        "options": [
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "影响施药方式及药剂选择"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "天气状况",
+        "type": "text",
+        "description": "近期降雨及温度情况",
+        "why_important": "影响施药效果和无人机作业安全"
+      }
+    ],
+    "clarification_templates": {
+      "药剂名称": "请问您计划使用哪种药剂进行根施？",
+      "虫害基数": "请问目前田间螟虫危害程度如何？",
+      "当前生育期": "请问甘蔗目前处于哪个生长阶段？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "虫害基数": "中度",
+          "天气状况": "晴朗无雨"
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即进行根施处理，用量控制在20-40克/亩。同时组织无人机进行联防联控，提高防治效果，为全年防控打下基础。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法无人机作业，改为人工撒施"
+      },
+      {
+        "condition_checks": {
+          "虫害基数": "重度",
+          "天气状况": "降雨或大风"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "当前天气条件不利于无人机作业及药剂吸收。建议暂缓施药，待天气好转后优先进行根施预防。",
+        "follow_up_question": "请问预计何时天气转好？是否需要准备备用药剂？",
+        "fallback_strategy": "若虫害爆发紧急，考虑使用内吸性强的药剂进行应急处理"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键信息（如具体药剂、虫害程度等），无法提供精准方案。建议补充田间具体情况后再行咨询。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱防涝.txt"
+}

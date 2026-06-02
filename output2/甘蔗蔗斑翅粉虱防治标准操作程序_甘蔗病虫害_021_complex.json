@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "title": "甘蔗蔗斑翅粉虱防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "成虫体表被粉，复眼紫褐色，前翅黄白色有褐色宽横带",
+      "若虫椭圆形扁平，分泌白色蜡质物，周缘呈暗黑色",
+      "叶面有蜜露排泄物，引发煤烟病"
+    ],
+    "triggers": [
+      "喜群居在蔗叶上吸取叶汁",
+      "分布于台湾省、东南亚及中国大陆广西、福建",
+      "雌虫产卵环状排列"
+    ],
+    "reasoning_chain": "如果观察到甘蔗叶片上有群居的粉状成虫或分泌蜡质的扁平若虫，且叶面伴有因蜜露引发的黑色煤烟状霉层，结合种植区域位于广西或福建，则可判定为蔗斑翅粉虱危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "危害程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "田间害虫密度及受害叶片比例",
+        "why_important": "决定是否需要立即进行化学防治以及药剂用量的调整"
+      },
+      {
+        "name": "前茬用药历史",
+        "type": "categorical",
+        "options": [
+          "无",
+          "使用过有机磷类",
+          "使用过氨基甲酸酯类",
+          "使用过新烟碱类"
+        ],
+        "description": "近期使用的农药种类",
+        "why_important": "避免抗药性产生，指导轮换用药策略"
+      },
+      {
+        "name": "具体种植区域",
+        "type": "categorical",
+        "options": [
+          "广西",
+          "福建",
+          "其他省份"
+        ],
+        "description": "甘蔗种植的具体地理位置",
+        "why_important": "确认是否为该害虫已知分布区，评估风险等级"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "当前天气状况",
+        "type": "text",
+        "description": "喷雾时的温度、风速及降雨预测",
+        "why_important": "影响药效发挥及飘移风险"
+      },
+      {
+        "name": "甘蔗生长阶段",
+        "type": "categorical",
+        "description": "苗期、分蘖期、伸长期或成熟期",
+        "why_important": "不同生育期对药剂敏感度不同"
+      }
+    ],
+    "clarification_templates": {
+      "危害程度": "请问目前田间甘蔗叶片上的粉虱密度如何？是否有大量煤烟病发生？",
+      "前茬用药历史": "请问近期是否使用过杀虫剂？如果有，主要成分是什么？",
+      "具体种植区域": "请问您的甘蔗种植在哪个省份或地区？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "具体种植区域": [
+            "广西",
+            "福建"
+          ],
+          "危害程度": [
+            "轻度",
+            "中度"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即进行化学防治。每公顷选用 20％巴沙 3000 毫升，或 20％叶蝉散 1500 毫升，或速杀灵 1500 毫升，均对水 1500 千克喷雾。重点喷洒叶片背面及群居处。",
+        "follow_up_question": null,
+        "fallback_strategy": "若施药后 3 天效果不明显，建议更换不同作用机理的药剂。"
+      },
+      {
+        "condition_checks": {
+          "具体种植区域": [
+            "广西",
+            "福建"
+          ],
+          "危害程度": "重度"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "鉴于危害严重，建议采用推荐药剂进行紧急防治，同时需清理煤烟病。每公顷选用 20％巴沙 3000 毫升对水 1500 千克喷雾。",
+        "follow_up_question": "为了制定后续抗性管理方案，请告知您过去一个月内使用过的杀虫剂类型。",
+        "fallback_strategy": "若无法获取详细用药历史，建议优先选择文中提到的不同类别药剂轮换使用。"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键信息（如种植区域和危害程度），无法提供精准防治方案。蔗斑翅粉虱主要分布在广西、福建等地，请补充相关信息以便获取针对性指导。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

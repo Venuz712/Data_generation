@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "title": "甘蔗蚜虫防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗叶背面群集淡黄色或黄绿色小虫",
+      "体表覆被白色蜡粉（绵蚜）或无蜡粉（黄蚜）",
+      "有翅型成虫体长 2.5 毫米（绵蚜）或 1～1.5 毫米（黄蚜）",
+      "吸食蔗液导致植株生长受阻"
+    ],
+    "triggers": [
+      "干旱年份易引起黄蚜大发生",
+      "8～9 月为害最严重",
+      "春暖后迁飞至宿根蔗和春植蔗",
+      "11 月迁飞至大芒草上越冬"
+    ],
+    "reasoning_chain": "如果观察到蔗叶背面群集有翅或无翅蚜虫，且体表特征符合绵蚜（有蜡粉）或黄蚜（无蜡粉/淡黄），结合 8-9 月高温或干旱环境，可判定为甘蔗蚜虫危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "current_growth_stage",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期",
+          "下种期",
+          "培土期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "不同阶段防治方法不同（如施药或颗粒剂埋施）"
+      },
+      {
+        "name": "infestation_severity",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "虫害发生的严重程度",
+        "why_important": "决定药剂浓度和防治频率"
+      },
+      {
+        "name": "weather_condition",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "正常"
+        ],
+        "description": "当前气候条件",
+        "why_important": "干旱年份易诱发黄蚜大发生，需重点监控"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "pesticide_history",
+        "type": "text",
+        "description": "近期使用过的农药名称",
+        "why_important": "避免抗药性产生，指导轮换用药"
+      },
+      {
+        "name": "soil_type",
+        "type": "text",
+        "description": "土壤类型",
+        "why_important": "影响颗粒剂施用的持效期"
+      }
+    ],
+    "clarification_templates": {
+      "current_growth_stage": "请问您的甘蔗目前处于哪个生长阶段？（如苗期、伸长期或下种期）",
+      "infestation_severity": "目前田间虫害发生的严重程度如何？（轻度、中度或重度）",
+      "weather_condition": "近期当地的气候条件是否干旱？",
+      "pesticide_history": "近期是否使用过其他农药防治蚜虫？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "current_growth_stage": [
+            "伸长期",
+            "分蘖期"
+          ],
+          "infestation_severity": [
+            "中度",
+            "重度"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "甘蔗生长中期蚜虫繁殖快速，建议立即进行药剂喷雾防治。可选用 40％乐果乳油 1000 倍液，或 40.7％乐斯本乳油 20 毫升对水 40 千克，或 50％辟蚜雾水剂 1000 倍液喷雾。夏收大忙前全面防治 1 次，夏种以后补治 1 次。",
+        "follow_up_question": null,
+        "fallback_strategy": "若喷雾后效果不佳，建议更换不同作用机理的药剂如 50％抗蚜威粉剂 2000 倍液。"
+      },
+      {
+        "condition_checks": {
+          "current_growth_stage": [
+            "下种期",
+            "培土期"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "在甘蔗下种时或宿根蔗培土时，建议采用土壤处理。每公顷施 3％米乐尔或 10％益舒宝颗粒剂 5 千克，施后盖土。此法有持续一段时间的防治效果，还可兼治其他地下害虫。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法进行土壤处理，可考虑在出苗后结合苗期管理进行喷雾。"
+      },
+      {
+        "condition_checks": {
+          "weather_condition": [
+            "干旱"
+          ],
+          "infestation_severity": [
+            "轻度"
+          ]
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "干旱年份易引起甘蔗黄蚜大发生，目前虽为轻度，需加强监测。建议提前准备药剂，若虫口密度增加立即防治。",
+        "follow_up_question": "请问目前田间是否已观察到黄蚜聚集？",
+        "fallback_strategy": "若监测到虫口密度迅速上升，转为重度防治方案。"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键信息（如生长阶段、虫害程度），无法提供精准方案。建议先确认甘蔗当前生长阶段及虫害严重程度，以便选择喷雾或土壤处理方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

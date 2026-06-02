@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "title": "甘蔗追肥培土标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "伸长期至拔节期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "9 月前未完成攻茎肥施用",
+      "甘蔗处于伸长期或拔节期",
+      "未进行大培土或培土高度不足",
+      "抗倒伏及抗台风能力需求高"
+    ],
+    "triggers": [
+      "9 月时间节点",
+      "台风季节临近",
+      "区域生育期差异（桂中拔节期/桂南伸长期）",
+      "土壤养分不足"
+    ],
+    "reasoning_chain": "如果当前时间在 9 月前且甘蔗处于伸长期或拔节期，且未进行攻茎肥和培土，则判定为需立即执行追肥培土操作以增强抗灾能力。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "current_date_status",
+        "type": "categorical",
+        "options": [
+          "9 月前",
+          "9 月后"
+        ],
+        "description": "当前日期是否在规定施肥期限内",
+        "why_important": "9 月后施用攻茎肥可能影响糖分积累，需调整方案"
+      },
+      {
+        "name": "specific_region",
+        "type": "categorical",
+        "options": [
+          "桂中",
+          "桂南",
+          "其他"
+        ],
+        "description": "种植区域位置",
+        "why_important": "不同区域甘蔗生育期不同，影响施肥时机判断"
+      },
+      {
+        "name": "soil_moisture",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "适宜",
+          "积水"
+        ],
+        "description": "当前土壤水分状况",
+        "why_important": "影响肥料吸收效率及培土操作可行性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "recent_fertilizer_history",
+        "type": "text",
+        "description": "近期施肥记录",
+        "why_important": "避免肥料过量导致烧苗或浪费"
+      },
+      {
+        "name": "weather_forecast",
+        "type": "text",
+        "description": "未来一周天气预测",
+        "why_important": "暴雨或台风可能影响培土和施肥效果"
+      }
+    ],
+    "clarification_templates": {
+      "current_date_status": "请问当前日期是否已过 9 月？",
+      "specific_region": "请问您所在的甘蔗种植区域是桂中、桂南还是其他地区？",
+      "soil_moisture": "当前田块土壤水分状况如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "current_date_status": "9 月前",
+          "specific_region": "桂中或桂南"
+        },
+        "response_type": "complete_solution",
+        "content": "立即执行追肥培土方案。1. 施用攻茎肥：每亩高钾型复合肥（10-5-20）20~25 公斤，重钾补氮。2. 大培土：施肥后培土高度达蔗茎基部 20~25 厘米。3. 叶面补充：无人机喷施磷酸二氢钾 120 克 + 尿素 400 克/亩。",
+        "follow_up_question": null,
+        "fallback_strategy": "若遇小雨可正常进行，若大雨需雨后补施"
+      },
+      {
+        "condition_checks": {
+          "current_date_status": "9 月后",
+          "specific_region": "任意"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "9 月后不宜重施攻茎肥，建议以叶面营养补充为主，控制氮肥，促进成熟。",
+        "follow_up_question": "请问甘蔗目前是否已出现贪青晚熟现象？",
+        "fallback_strategy": "若急需抗倒伏，可仅进行培土，暂停根部追肥"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键的时间节点和区域信息，无法提供精准方案。请补充当前日期及种植区域，以便判断是否处于 9 月前关键期及对应生育期。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻2.txt"
+}

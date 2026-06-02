@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "title": "甘蔗去主茎与定苗标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "分蘖期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "每穴分蘖茎数达到 5 条及以上",
+      "主茎生长优势明显",
+      "群体结构不均"
+    ],
+    "triggers": [
+      "分蘖期生长旺盛",
+      "需要控制有效茎密度",
+      "行头空间预留需求"
+    ],
+    "reasoning_chain": "如果观察到每穴有 5 条及以上健康分蘖茎，且主茎生长优势抑制分蘖，则判定需要进行去主茎及定苗操作。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "行头长度",
+        "type": "categorical",
+        "options": [
+          "≤20 米",
+          "20-30 米",
+          ">30 米"
+        ],
+        "description": "单厢行头的长度范围",
+        "why_important": "决定行头留苗穴数及株数配置"
+      },
+      {
+        "name": "当前亩有效茎数",
+        "type": "numeric",
+        "description": "当前地块每亩的有效茎数量",
+        "why_important": "确保定苗后群体密度达到 4500 株以上标准"
+      },
+      {
+        "name": "分蘖数量",
+        "type": "numeric",
+        "description": "单穴健康分蘖茎的数量",
+        "why_important": "判断是否达到去主茎的启动阈值"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "补苗材料来源",
+        "type": "text",
+        "description": "用于补苗的主茎来源",
+        "why_important": "确保补苗植株健康且有繁殖能力"
+      },
+      {
+        "name": "田间杂草情况",
+        "type": "text",
+        "description": "田间杂草生长状况",
+        "why_important": "影响定苗后的苗情竞争"
+      }
+    ],
+    "clarification_templates": {
+      "行头长度": "请问单厢行头的长度是多少米？",
+      "当前亩有效茎数": "请问当前地块每亩估算的有效茎数量是多少？",
+      "分蘖数量": "请问每穴目前有多少条健康分蘖茎？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "分蘖数量": "≥5",
+          "行头长度": "已知"
+        },
+        "response_type": "complete_solution",
+        "content": "立即进行去主茎及定苗工作。选取单窝长势均匀的 5 株分蘖苗；如有空缺位置，则在两侧留 6 株。根据行头长度调整留苗穴数：≤20 米留 2 穴，20-30 米留 3 穴，>30 米留 4 穴，每穴 5 株。主茎收集返回基地筛选补苗用。",
+        "follow_up_question": null,
+        "fallback_strategy": "若定苗后群体株数不足，及时补苗"
+      },
+      {
+        "condition_checks": {
+          "分蘖数量": "<5"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "目前分蘖不足，建议延迟去主茎操作，避免分蘖不足影响产量。",
+        "follow_up_question": "请问预计还需要多少天才能观察到足够的分蘖？",
+        "fallback_strategy": "加强水肥管理促进分蘖"
+      },
+      {
+        "condition_checks": {
+          "定苗后状态": "有空缺"
+        },
+        "response_type": "alternative_solution",
+        "content": "利用去主茎收集的健康主茎进行补苗，确保每亩有效茎数达到 4500 以上。",
+        "follow_up_question": null,
+        "fallback_strategy": "使用备用健康种苗"
+      }
+    ],
+    "default_response": {
+      "content": "缺少关键信息，无法提供精准操作建议。请提供当前分蘖数量及行头长度信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

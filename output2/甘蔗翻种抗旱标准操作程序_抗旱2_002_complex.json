@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "title": "甘蔗翻种抗旱标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "高糖品种"
+    ],
+    "growth_stage": "种植期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "翻种需求",
+      "预期降雨较少",
+      "需提升抗旱性"
+    ],
+    "triggers": [
+      "干旱气候",
+      "土壤保水性差",
+      "重新种植"
+    ],
+    "reasoning_chain": "如果处于翻种期且预期降雨较少，则需采取抗旱种植措施。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤墒情",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "适中"
+        ],
+        "description": "当前种植地块的土壤水分状况",
+        "why_important": "决定是否需要额外淋水及盖土厚度的调整"
+      },
+      {
+        "name": "药剂资源",
+        "type": "boolean",
+        "description": "是否具备获取浸种药剂的条件",
+        "why_important": "决定能否执行化学浸种处理以提升抗旱性"
+      },
+      {
+        "name": "降雨预测",
+        "type": "categorical",
+        "options": [
+          "少",
+          "充足"
+        ],
+        "description": "未来一周的降雨情况预测",
+        "why_important": "决定是否需要人工淋水处理"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植规模",
+        "type": "text",
+        "description": "计划种植的亩数或面积",
+        "why_important": "影响药剂采购量及人工成本预算"
+      }
+    ],
+    "clarification_templates": {
+      "土壤墒情": "请问当前地块的土壤墒情如何？",
+      "药剂资源": "请问您是否有条件获取壳寡糖或苯菌灵等浸种药剂？",
+      "降雨预测": "请问当地未来一周的降雨预测情况如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "降雨预测": "少",
+          "药剂资源": "是"
+        },
+        "response_type": "complete_solution",
+        "content": "建议选用高糖品种，砍成3—4芽段。使用含壳寡糖、苯菌灵等浸种处理，并应用促根保水剂。增加10%—15%下种量，盖土厚度6—8cm。种植后若降雨较少，务必进行淋水处理。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法淋水，增加覆盖物保墒"
+      },
+      {
+        "condition_checks": {
+          "降雨预测": "少",
+          "药剂资源": "否"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "建议选用高糖品种，砍成3—4芽段。增加10%—15%下种量，盖土厚度6—8cm。因无药剂条件，重点依靠物理保水。",
+        "follow_up_question": "是否具备人工淋水或覆盖秸秆保墒的条件？",
+        "fallback_strategy": "增加下种量至20%以弥补出苗率"
+      },
+      {
+        "condition_checks": {
+          "降雨预测": "充足"
+        },
+        "response_type": "alternative_solution",
+        "content": "建议选用高糖品种，砍成3—4芽段。盖土厚度可适当减少至5cm以防烂种。无需额外淋水，但需注意排水防涝。",
+        "follow_up_question": null,
+        "fallback_strategy": "若雨后积水，及时开沟排水"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定精准方案，请补充土壤墒情及降雨预测信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱2.txt"
+}

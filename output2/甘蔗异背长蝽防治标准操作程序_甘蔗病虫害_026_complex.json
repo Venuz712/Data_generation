@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "title": "甘蔗异背长蝽防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗异背长蝽防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "成虫体呈扁长筒形，黑色，密被灰白色细毛",
+      "若虫第六腹节至腹末为漆黑色",
+      "虫体腹面第五腹节正中有一明显的三角形黑斑",
+      "隐匿于靠近蔗茎基部的叶鞘或心叶中"
+    ],
+    "triggers": [
+      "5 月中旬田间虫口密度达到最高峰",
+      "2～3 月间越冬成虫转移至新蔗苗",
+      "气温升高后虫口密度下降",
+      "广西、福建及珠江流域蔗区"
+    ],
+    "reasoning_chain": "如果在 3 月至 5 月期间，在蔗株基部叶鞘或心叶内发现黑色扁长虫体，且若虫腹面有三角形黑斑，结合 5 月中旬虫口高峰特征，可判定为甘蔗异背长蝽。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "infestation_level",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "田间虫害发生的严重程度",
+        "why_important": "决定是否需要立即进行药剂防治及用药浓度"
+      },
+      {
+        "name": "current_growth_stage",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生育时期",
+        "why_important": "不同生育期对药剂的敏感度及施药部位不同"
+      },
+      {
+        "name": "weather_condition",
+        "type": "categorical",
+        "options": [
+          "晴朗",
+          "多云",
+          "降雨",
+          "大风"
+        ],
+        "description": "施药时的天气状况",
+        "why_important": "影响药剂附着效果及飘移风险"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "previous_pesticide",
+        "type": "text",
+        "description": "近期使用过的农药名称",
+        "why_important": "避免抗药性产生及药害风险"
+      },
+      {
+        "name": "field_location",
+        "type": "text",
+        "description": "种植区域（如广西、福建）",
+        "why_important": "不同区域发生代数及时间略有差异"
+      }
+    ],
+    "clarification_templates": {
+      "infestation_level": "请问目前田间甘蔗异背长蝽的虫口密度大概是多少？",
+      "current_growth_stage": "请问甘蔗目前处于哪个生长阶段？",
+      "weather_condition": "请问未来 24 小时内的天气情况如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "infestation_level": "重度",
+          "current_growth_stage": [
+            "苗期",
+            "分蘖期",
+            "伸长期"
+          ],
+          "time_period": "5 月"
+        },
+        "response_type": "complete_solution",
+        "content": "当前处于虫害盛发期且密度较高，建议立即进行药剂防治。任选以下一种药剂：50％杀螟松乳油 1000 倍稀释液，或 90％晶体敌百虫 800～1000 倍稀释液，或 80％敌敌畏乳油 1000 倍稀释液，或 25％巴沙乳剂 500 倍稀释液。施药时注意喷射心叶及蔗兜，力求药液触到虫体。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法获取上述药剂，可咨询当地农技部门寻找替代品。"
+      },
+      {
+        "condition_checks": {
+          "infestation_level": "轻度",
+          "current_growth_stage": "苗期",
+          "time_period": "3 月 -4 月"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "当前处于虫害初期，虫口密度较低。建议加强田间监测，重点检查蔗茎基部叶鞘。若虫口持续增加，需准备药剂防治。",
+        "follow_up_question": "请问未来一周内是否有降雨计划？",
+        "fallback_strategy": "保持观察，若 5 月中旬虫量未降则按重度方案处理。"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键的虫害程度和生长阶段信息，无法提供精准方案。请补充田间虫口密度及甘蔗生长阶段信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

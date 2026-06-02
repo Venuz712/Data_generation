@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "title": "甘蔗科学剥叶标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "生长中后期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "基部腐烂",
+      "发黄枯叶",
+      "病叶",
+      "蔗田郁蔽",
+      "田间湿度高"
+    ],
+    "triggers": [
+      "高温高湿气候",
+      "生长中后期",
+      "露水未干或雨天",
+      "田间通风透光差"
+    ],
+    "reasoning_chain": "如果观察到蔗茎基部有腐烂或发黄枯叶，且处于生长中后期高温高湿环境，则需要进行科学剥叶处理。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前天气状况",
+        "type": "categorical",
+        "options": [
+          "晴天",
+          "雨天",
+          "露水未干"
+        ],
+        "description": "剥叶作业时的即时天气条件",
+        "why_important": "剥叶必须在晴天进行，避免在露水未干或雨天操作以防止病害传播"
+      },
+      {
+        "name": "具体生育期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "剥叶频率和保留叶数需根据生长阶段调整，文中主要针对中后期"
+      },
+      {
+        "name": "病虫害发生程度",
+        "type": "categorical",
+        "options": [
+          "无",
+          "轻度",
+          "重度"
+        ],
+        "description": "田间粉蚧、飞虱等病虫害的严重程度",
+        "why_important": "影响剥叶的紧迫性和后续处理措施"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "蔗田面积",
+        "type": "text",
+        "description": "需要处理的蔗田规模",
+        "why_important": "用于估算人工和焚烧处理的工作量"
+      },
+      {
+        "name": "历史用药记录",
+        "type": "text",
+        "description": "近期是否使用过农药",
+        "why_important": "避免重复用药或产生抗药性"
+      }
+    ],
+    "clarification_templates": {
+      "当前天气状况": "请问当前蔗田区域的天气状况如何？是否为晴天且无露水？",
+      "具体生育期": "请问甘蔗目前处于哪个生长阶段？（如伸长期或成熟期）",
+      "病虫害发生程度": "田间是否观察到明显的粉蚧或飞虱危害？程度如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前天气状况": "晴天",
+          "具体生育期": [
+            "伸长期",
+            "成熟期"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即开展科学剥叶。每根蔗茎保留 9~10 片叶或 6~7 片完全展开叶，每 15~20 天剥叶一次。剥下的病叶枯叶需带出蔗田集中烧毁，切勿留在田间。",
+        "follow_up_question": null,
+        "fallback_strategy": "若作业中途转雨，立即停止作业"
+      },
+      {
+        "condition_checks": {
+          "当前天气状况": [
+            "雨天",
+            "露水未干"
+          ],
+          "具体生育期": "任意"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "当前天气不适合剥叶，强行操作易导致病害传播。建议等待晴天且露水干透后再进行。",
+        "follow_up_question": "请问未来 24 小时内是否有降雨预报？",
+        "fallback_strategy": "若持续阴雨，优先清理基部严重腐烂叶片，减少病害基数"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键环境信息，无法给出确切操作建议。请补充当前天气状况及甘蔗生育期信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻2.txt"
+}

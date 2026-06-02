@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "甘蔗灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "低洼蔗田积水",
+      "根系长时间浸泡",
+      "甘蔗倒伏",
+      "大风或台风天气"
+    ],
+    "triggers": [
+      "持续降雨",
+      "低洼地形",
+      "极端天气（大风、台风）"
+    ],
+    "reasoning_chain": "如果观察到蔗田积水且持续降雨，或遭遇大风天气，则判定为渍涝或倒伏风险。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "积水深度",
+        "type": "numeric",
+        "description": "蔗田积水的水位高度",
+        "why_important": "决定排水紧迫性和根系受损程度"
+      },
+      {
+        "name": "倒伏程度",
+        "type": "categorical",
+        "options": [
+          "轻微倾斜",
+          "严重倒伏",
+          "折断"
+        ],
+        "description": "甘蔗植株倒伏的状态",
+        "why_important": "决定是扶正捆绑还是改种"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "土壤类型",
+        "type": "categorical",
+        "description": "蔗田土壤质地",
+        "why_important": "影响排水速度和根系透气性"
+      }
+    ],
+    "clarification_templates": {
+      "积水深度": "请问目前蔗田积水深度大约是多少厘米？",
+      "倒伏程度": "请问甘蔗倒伏的比例和程度如何？是倾斜还是完全倒伏？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "灾害类型": "渍涝",
+          "积水状态": "持续积水"
+        },
+        "response_type": "complete_solution",
+        "content": "加强蔗区巡查，及时清理疏通蔗田排水沟渠，将积水迅速排出蔗田，避免甘蔗根系长时间浸泡，影响甘蔗生长。",
+        "fallback_strategy": "若排水困难，可考虑使用抽水设备辅助排水。"
+      },
+      {
+        "condition_checks": {
+          "灾害类型": "风灾",
+          "甘蔗状态": "已倒伏"
+        },
+        "response_type": "complete_solution",
+        "content": "对已倒伏的蔗株及时扶正捆绑，使蔗株直立，减少产量损失。",
+        "fallback_strategy": "若植株折断严重，建议评估是否改种或补种。"
+      },
+      {
+        "condition_checks": {
+          "灾害类型": "风灾",
+          "甘蔗状态": "未倒伏但有预警"
+        },
+        "response_type": "complete_solution",
+        "content": "有条件的蔗区可提前将田块外围的甘蔗搭架固定，防止倒伏。",
+        "fallback_strategy": "若无支架材料，可尝试利用周边作物或绳索临时固定。"
+      }
+    ],
+    "default_response": {
+      "content": "未检测到具体灾害类型或信息不足，请确认当前蔗田是否存在积水或大风预警。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻.txt"
+}

@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "甘蔗种茎管理与灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "种苗准备与种植期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "种茎干瘪严重",
+      "种茎枯死",
+      "倒伏后下部芽段长出侧芽侧根",
+      "生长点坏死且爆芽"
+    ],
+    "triggers": [
+      "旱害",
+      "寒害",
+      "种茎保存不当导致水分流失",
+      "种植前未及时种植"
+    ],
+    "reasoning_chain": "如果观察到种茎干瘪或枯死，或倒伏后芽段已萌发侧根，则判定为不适宜留种；如果生长点坏死且爆芽，则需增加用种量。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "种茎保存时长",
+        "type": "numeric",
+        "description": "种茎从收获到计划种植的时间间隔",
+        "why_important": "决定是否需要采取特殊保存措施及保存方式的选择"
+      },
+      {
+        "name": "灾害受损程度",
+        "type": "categorical",
+        "options": [
+          "轻微",
+          "中等",
+          "严重"
+        ],
+        "description": "旱害或寒害对种茎生长点的具体影响程度",
+        "why_important": "决定增加用种量的具体比例"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植品种",
+        "type": "text",
+        "description": "当前计划种植的甘蔗品种名称",
+        "why_important": "不同品种对灾害的耐受性不同"
+      },
+      {
+        "name": "地块面积",
+        "type": "numeric",
+        "description": "计划种植的土地面积",
+        "why_important": "用于计算所需种茎总量"
+      }
+    ],
+    "clarification_templates": {
+      "种茎保存时长": "请问您的种茎预计需要保存多少天才能种植？",
+      "灾害受损程度": "请问目前种茎受旱害或寒害的影响程度如何？是轻微、中等还是严重？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "种苗质量": "饱满、无病虫害、无伤",
+          "种植时机": "及时"
+        },
+        "response_type": "complete_solution",
+        "content": "春植甘蔗应选用饱满、无病虫害、无伤的双芽苗蔗作种苗。确保种茎质量符合标准，直接进行种植准备。",
+        "follow_up_question": null,
+        "fallback_strategy": "若现场发现个别种茎有轻微损伤，需人工剔除后使用。"
+      },
+      {
+        "condition_checks": {
+          "种苗质量": "干瘪、枯死、倒伏侧芽或生长点坏死",
+          "种植时机": "延迟或灾害后"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "对蔗茎干瘪严重甚至枯死的，以及倒伏后下部芽段长出侧芽侧根的，不适宜留种。若生长点坏死且爆芽，需增加用种量。若短时间内不能种植，需加强保存管理（保留蔗叶、覆盖遮阳网或埋土）。",
+        "follow_up_question": "请问您计划延迟种植的具体天数是多少？以便提供更精确的保存建议。",
+        "fallback_strategy": "在宿根蔗干旱缺水情况下，能不翻种尽量不翻，降低种茎缺口风险。"
+      }
+    ],
+    "default_response": {
+      "content": "未检测到明确的灾害或种苗问题，建议按照常规标准进行种苗筛选与种植，并密切关注天气变化。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱1.txt"
+}

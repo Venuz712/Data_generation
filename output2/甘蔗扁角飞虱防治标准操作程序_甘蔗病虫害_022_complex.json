@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "甘蔗扁角飞虱防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "苗期至成熟期",
+    "source": "甘蔗扁角飞虱防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "受害叶片初出现黄白相间的斑纹",
+      "后渐变红褐色以致干枯",
+      "心叶和嫩叶背面有若虫取食"
+    ],
+    "triggers": [
+      "7～9月为害最严重",
+      "卵在秋冬蔗叶的中脉及残留田间的蔗叶组织内越冬",
+      "若虫迁移到蔗苗的心叶取食"
+    ],
+    "reasoning_chain": "如果观察到蔗叶心叶或嫩叶背面有若虫取食，且叶片出现黄白相间斑纹后变红褐色干枯，结合7-9月高发期，可判定为甘蔗扁角飞虱危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "虫害发生密度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "单位面积内飞虱数量",
+        "why_important": "决定用药浓度和频率"
+      },
+      {
+        "name": "甘蔗当前生育期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗生长阶段",
+        "why_important": "不同阶段抗药性和危害程度不同"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "近期天气状况",
+        "type": "text",
+        "description": "未来3天是否有雨",
+        "why_important": "影响施药效果"
+      }
+    ],
+    "clarification_templates": {
+      "虫害发生密度": "请问目前每株甘蔗心叶处大约有多少只若虫？",
+      "甘蔗当前生育期": "请问甘蔗目前处于哪个生长阶段？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "虫害发生密度": "轻度",
+          "甘蔗当前生育期": "苗期"
+        },
+        "response_type": "complete_solution",
+        "content": "及时清理蔗梢残叶，在远离蔗田处烧毁沤肥。选用10％吡虫啉5000倍稀释液喷杀。",
+        "fallback_strategy": "若无效，可改用50％马拉松加50％稻瘟净各1份加水1200倍稀释液"
+      },
+      {
+        "condition_checks": {
+          "虫害发生密度": "重度",
+          "月份": "7-9月"
+        },
+        "response_type": "complete_solution",
+        "content": "选用80％敌敌畏乳油1000～1500倍稀释液，或80％敌敌畏乳油加40％乐果各1份混合加水1000倍稀释液喷杀。",
+        "fallback_strategy": "注意轮换用药，防止抗药性产生"
+      },
+      {
+        "condition_checks": {
+          "虫害发生密度": "未知"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "建议先清理田间残叶，并观察心叶情况。",
+        "follow_up_question": "请问目前每株甘蔗心叶处大约有多少只若虫？"
+      }
+    ],
+    "default_response": {
+      "content": "请提供具体的虫害密度和甘蔗生长阶段以便制定精准方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

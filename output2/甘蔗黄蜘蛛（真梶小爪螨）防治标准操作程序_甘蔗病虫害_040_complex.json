@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "title": "甘蔗黄蜘蛛（真梶小爪螨）防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗叶背面群聚微小螨虫",
+      "叶片初呈淡黄色小斑点",
+      "叶片逐渐变为暗红色大块斑",
+      "叶片发红以致焦枯"
+    ],
+    "triggers": [
+      "高温干旱天气",
+      "6～9月发生高峰期",
+      "蔗叶背面环境"
+    ],
+    "reasoning_chain": "如果观察到蔗叶背面有微小螨虫群聚，且叶片出现淡黄色斑点逐渐变为暗红色大块斑，结合高温干旱环境，可判定为真梶小爪螨危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "虫害密度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "叶片受害面积比例",
+        "why_important": "决定用药策略和频率"
+      },
+      {
+        "name": "天气状况",
+        "type": "categorical",
+        "options": [
+          "高温干旱",
+          "湿润",
+          "正常"
+        ],
+        "description": "近期气象条件",
+        "why_important": "影响螨虫爆发程度"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "历史用药",
+        "type": "text",
+        "description": "近期使用过的农药",
+        "why_important": "避免抗药性和药害"
+      }
+    ],
+    "clarification_templates": {
+      "虫害密度": "请问目前蔗叶受害面积占比大约是多少？",
+      "天气状况": "请问近期当地天气是否持续高温干旱？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "虫害密度": "轻度",
+          "天气状况": "正常"
+        },
+        "response_type": "complete_solution",
+        "content": "虫害较轻且环境适宜，建议优先保护天敌（短管食螨瓢虫），加强监测。若需防治，可选用20％三氯杀螨醇乳油1000倍稀释液喷布叶片背面，喷药1次即可。",
+        "follow_up_question": "",
+        "fallback_strategy": "若一周后症状加重，转为重度方案。"
+      },
+      {
+        "condition_checks": {
+          "虫害密度": "重度",
+          "天气状况": "高温干旱"
+        },
+        "response_type": "complete_solution",
+        "content": "虫害严重且环境利于爆发，立即使用40％乐果乳剂或80％敌敌畏乳油1000倍稀释液喷布叶片背面。注意该药不能杀卵，喷药后隔10～15天须重喷1次，连续喷布2～3次。",
+        "follow_up_question": "",
+        "fallback_strategy": "若效果不佳，可轮换使用73％克螨特乳油2000倍稀释液。"
+      },
+      {
+        "condition_checks": {
+          "虫害密度": "未确认",
+          "天气状况": "未确认"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "检测到疑似虫害症状，但缺乏关键环境信息。建议先清理田间杂草，减少虫源。",
+        "follow_up_question": "请问目前叶片受害面积占比多少？近期是否高温干旱？",
+        "fallback_strategy": "无"
+      }
+    ],
+    "default_response": {
+      "content": "请提供具体的虫害症状描述及发生环境信息，以便制定精准防治方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

@@ -1,0 +1,127 @@
+{
+  "meta": {
+    "title": "甘蔗二色突束蝽与根土蝽防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "苗期及全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗叶呈火灼般焦黄",
+      "生长停滞",
+      "叶黄",
+      "株矮",
+      "枯死",
+      "成虫体长8～9.5毫米，全体褐色",
+      "若虫体暗黄绿色，胸、腹间有红、黄、蓝等色斑",
+      "成虫体长4～5.5毫米，近似椭圆形，全体红褐色"
+    ],
+    "triggers": [
+      "9～10月间大发生",
+      "成虫和若虫群集性",
+      "在蔗叶上吸食汁液",
+      "地下钻行，以口针刺吸根部",
+      "甘蔗苗期影响大"
+    ],
+    "reasoning_chain": "如果观察到蔗叶焦黄且生长停滞，结合9-10月季节及群集特征，可判定为二色突束蝽；如果植株矮小枯死且根部受损，结合地下活动习性，可判定为根土蝽。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "虫害发生部位",
+        "type": "categorical",
+        "options": [
+          "叶片",
+          "根部",
+          "全株"
+        ],
+        "description": "虫害主要危害的甘蔗部位",
+        "why_important": "不同部位对应不同的害虫种类及防治药剂"
+      },
+      {
+        "name": "甘蔗生育期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "苗期对二色突束蝽敏感，种植期适合根土蝽土壤处理"
+      },
+      {
+        "name": "虫害严重程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "受害植株的比例或虫口密度",
+        "why_important": "决定药剂浓度及是否需要多次防治"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "历史用药情况",
+        "type": "text",
+        "description": "近期是否使用过杀虫剂",
+        "why_important": "避免抗药性及药害"
+      },
+      {
+        "name": "土壤湿度",
+        "type": "text",
+        "description": "田间土壤干湿状况",
+        "why_important": "影响根土蝽活动及颗粒剂效果"
+      }
+    ],
+    "clarification_templates": {
+      "虫害发生部位": "请问虫害主要出现在甘蔗的叶片上还是根部？",
+      "甘蔗生育期": "请问甘蔗目前处于苗期、分蘖期还是伸长期？",
+      "虫害严重程度": "请问受害植株大概占田间的比例是多少？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "虫害发生部位": "叶片",
+          "甘蔗生育期": "苗期"
+        },
+        "response_type": "complete_solution",
+        "content": "针对二色突束蝽，建议喷施80％敌敌畏乳油1000倍稀释液，或20％灭扫利、2.5％敌杀死、20％速灭杀丁均为2000～4000倍稀释液。注意9～10月高发期需重点监测。",
+        "follow_up_question": null,
+        "fallback_strategy": "若喷施后效果不佳，可更换不同作用机理药剂轮换使用"
+      },
+      {
+        "condition_checks": {
+          "虫害发生部位": "根部",
+          "甘蔗生育期": "种植期或培土期"
+        },
+        "response_type": "complete_solution",
+        "content": "针对根土蝽，结合种植和培土，在根部施20％益舒宝颗粒剂或3％米乐尔颗粒剂，每公顷用45～75千克。若成虫出土面活动，可选用80％敌敌畏乳油1000倍稀释液喷雾。",
+        "follow_up_question": null,
+        "fallback_strategy": "加强田间排水，改善土壤环境减少虫害发生"
+      },
+      {
+        "condition_checks": {
+          "虫害发生部位": "未明确",
+          "甘蔗生育期": "全生育期"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "目前症状可能涉及多种虫害。建议先检查叶片是否有群集褐色成虫或若虫，或检查根部是否有红褐色小虫。同时可采取农业防治措施：甘蔗收获后，将地里留下的蔗叶烧毁，减少虫源。",
+        "follow_up_question": "请确认虫害主要聚集在叶片还是根部，以便提供精准药剂建议。",
+        "fallback_strategy": "若无法确认，建议先进行田间调查取样"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺乏具体的虫害部位和甘蔗生长阶段信息，无法提供精准防治方案。建议先观察害虫形态特征及危害部位，并补充相关信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

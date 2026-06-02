@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "title": "甘蔗倒伏灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "甘蔗植株倒伏",
+      "根系松动",
+      "茎秆倾斜或平躺"
+    ],
+    "triggers": [
+      "大风暴雨天气",
+      "土壤松软",
+      "种植过密",
+      "施肥不当导致头重脚轻"
+    ],
+    "reasoning_chain": "如果观察到甘蔗植株倾斜或平躺且根系松动，结合近期有大风暴雨天气，可判定为倒伏灾害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "倒伏程度",
+        "type": "categorical",
+        "options": [
+          "轻度倾斜",
+          "严重倒伏"
+        ],
+        "description": "甘蔗倒伏的严重程度",
+        "why_important": "决定是否需要木棍支撑及培土力度"
+      },
+      {
+        "name": "距收获天数",
+        "type": "numeric",
+        "description": "距离预计收获的时间",
+        "why_important": "评估扶正投入成本与产量恢复收益的性价比"
+      },
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "湿润",
+          "干燥",
+          "积水"
+        ],
+        "description": "当前土壤水分状况",
+        "why_important": "影响培土压实效果和根系恢复"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "近期施肥记录",
+        "type": "text",
+        "description": "最近一次施肥的时间和种类",
+        "why_important": "避免肥料过量导致烧苗"
+      }
+    ],
+    "clarification_templates": {
+      "倒伏程度": "请问目前甘蔗倒伏的程度如何？是轻微倾斜还是完全平躺？",
+      "距收获天数": "请问距离预计收获还有多少天？",
+      "土壤湿度": "请问当前土壤是湿润、干燥还是存在积水？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "倒伏程度": [
+            "轻度倾斜",
+            "严重倒伏"
+          ],
+          "距收获天数": ">30"
+        },
+        "response_type": "complete_solution",
+        "content": "及时扶正倒伏甘蔗，可将两行甘蔗交叉捆扎成“人”字形，踩实泥土压实蔗根，必要时用木棍辅助支撑。通过高培土促进蔗株稳扎根。扶正后15天松绑。结合扶正培土，增施1次速效肥料（尿素10公斤和钾肥5公斤），以防脱肥，促进蔗株恢复生长。",
+        "follow_up_question": null,
+        "fallback_strategy": null
+      },
+      {
+        "condition_checks": {
+          "倒伏程度": "严重倒伏",
+          "距收获天数": "0-30"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "对于临近收获的重度倒伏甘蔗，扶正可能损伤蔗茎。建议评估产量损失。若决定处理，需高培土并增施速效肥料（尿素10公斤和钾肥5公斤）。",
+        "follow_up_question": "请问该地块距离收获还有多久？是否值得投入人工扶正？",
+        "fallback_strategy": "若放弃扶正，建议直接收割或等待自然恢复后收割，注意防霉变。"
+      },
+      {
+        "condition_checks": {
+          "土壤湿度": "积水"
+        },
+        "response_type": "alternative_solution",
+        "content": "若土壤积水，先排水再扶正。排水后踩实泥土压实蔗根，防止烂根。增施钾肥增强抗逆性。",
+        "follow_up_question": null,
+        "fallback_strategy": "优先排水，待土壤稍干后再进行培土操作。"
+      }
+    ],
+    "default_response": {
+      "content": "检测到甘蔗倒伏灾害。请确认倒伏程度及土壤状况，以便提供精准方案。通用建议：扶正、培土、施肥。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "风灾1.txt"
+}

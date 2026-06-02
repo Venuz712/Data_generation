@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "title": "甘蔗栗鳃金龟防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "未提及",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "成虫体长21-25mm栗褐色，密被茸毛，前胸背板侧缘钝锯齿缺刻",
+      "幼虫老熟体长40-45mm，头部黄褐色，胸腹部黄白色",
+      "蔗根/蔗头被咬食，严重时蔗头全被吃空"
+    ],
+    "triggers": [
+      "丘陵沙质旱地及河滩地",
+      "7-11月为害盛期",
+      "幼虫越冬（20-30cm土中）",
+      "每公顷幼虫密度超10万头"
+    ],
+    "reasoning_chain": "若观察到成虫/幼虫形态特征且处于沙质旱地环境，结合7-11月发生期及蔗根受害症状，可判定为栗鳃金龟危害",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "病情阶段",
+        "type": "categorical",
+        "options": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "description": "虫害发生严重程度分级",
+        "why_important": "不同阶段需匹配不同防治强度"
+      },
+      {
+        "name": "土壤湿度",
+        "type": "numeric",
+        "options": [],
+        "description": "田间土壤含水量百分比",
+        "why_important": "影响水旱轮作效果及药剂渗透性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "历史用药记录",
+        "type": "text",
+        "description": "近期使用过的农药种类及次数",
+        "why_important": "避免抗药性产生"
+      }
+    ],
+    "clarification_templates": {
+      "病情阶段": "当前甘蔗受害程度如何？是否出现蔗头空心现象？",
+      "土壤湿度": "近期田间土壤含水量是否超过60%？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "病情阶段": "初期",
+          "土壤类型": "沙质旱地"
+        },
+        "response_type": "complete_solution",
+        "content": "立即实施水旱轮作，成虫期采用灯光诱杀，大培土时施用20%益舒宝颗粒剂75kg/公顷",
+        "follow_up_question": null,
+        "fallback_strategy": "若轮作不可行，增加药剂施用频次"
+      },
+      {
+        "condition_checks": {
+          "病情阶段": "后期",
+          "土壤湿度": "<40%"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "建议夜间人工捕捉成虫，配合3%米乐尔颗粒剂灌根处理",
+        "follow_up_question": "是否已进行过化学防治？具体用药历史如何？",
+        "fallback_strategy": "优先采用生物防治措施"
+      }
+    ],
+    "default_response": {
+      "content": "请补充病情阶段和土壤湿度信息以获取精准防治方案",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

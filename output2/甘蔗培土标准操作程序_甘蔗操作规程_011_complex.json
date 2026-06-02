@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "title": "甘蔗培土标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "定苗后分蘖初期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "定苗工作完成 1 个星期后",
+      "覆土厚度 5-10cm",
+      "表面有明显隆起",
+      "形成龟背形垄面"
+    ],
+    "triggers": [
+      "固根需求",
+      "改善通气需求",
+      "促进次生根发育",
+      "避免抑制分蘖"
+    ],
+    "reasoning_chain": "如果定苗已完成 7 天且需要固根促进分蘖，则进行浅覆土培土，厚度控制在 5-10cm 并形成龟背形，避免过厚抑制分蘖。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "过干",
+          "适宜",
+          "过湿"
+        ],
+        "description": "当前土壤含水量状态",
+        "why_important": "土壤过湿培土易板结，过干则难以成型且伤根"
+      },
+      {
+        "name": "分蘖进度",
+        "type": "categorical",
+        "options": [
+          "未开始",
+          "初期",
+          "盛期"
+        ],
+        "description": "甘蔗分蘖的生长阶段",
+        "why_important": "培土过厚会抑制分蘖，需根据分蘖情况调整厚度"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "天气预测",
+        "type": "text",
+        "description": "未来 3 天天气预报",
+        "why_important": "大雨可能冲刷新培土垄，影响效果"
+      }
+    ],
+    "clarification_templates": {
+      "土壤湿度": "请问当前田块土壤湿度如何？是干燥、湿润还是泥泞？",
+      "分蘖进度": "目前甘蔗的分蘖情况如何？是否已经开始大量分蘖？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "时间条件": "定苗后 7 天",
+          "土壤湿度": "适宜"
+        },
+        "response_type": "complete_solution",
+        "content": "符合培土时机。请立即进行浅覆土作业，控制覆土厚度在 5-10cm，确保垄面形成明显的龟背形隆起，以利于固根和通气。",
+        "follow_up_question": null,
+        "fallback_strategy": "若作业后遇大雨，需检查垄面是否坍塌并补培"
+      },
+      {
+        "condition_checks": {
+          "时间条件": "定苗后 7 天",
+          "分蘖进度": "盛期"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "时间符合，但分蘖盛期需特别注意培土厚度。建议适当减薄覆土，避免抑制分蘖生长。",
+        "follow_up_question": "请问您计划覆盖的土壤厚度具体是多少？是否担心影响分蘖？",
+        "fallback_strategy": "若无法控制厚度，建议推迟至分蘖后期进行"
+      },
+      {
+        "condition_checks": {
+          "时间条件": "定苗后 7 天",
+          "土壤湿度": "过湿"
+        },
+        "response_type": "alternative_solution",
+        "content": "土壤过湿不宜立即培土，易导致土壤板结缺氧。建议等待土壤稍干后再进行，或仅做浅层松土。",
+        "follow_up_question": "预计何时土壤湿度能恢复适宜？",
+        "fallback_strategy": "若必须作业，仅覆盖 3-5cm 薄土"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以判断是否适合培土。请确认是否已完成定苗工作 7 天，并告知当前土壤湿度及分蘖情况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

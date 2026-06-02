@@ -1,0 +1,115 @@
+{
+  "meta": {
+    "title": "甘蔗干旱灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "新植期及宿根期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "缺苗",
+      "死苗",
+      "蔗种烂芽",
+      "蔗苗生长明显矮小",
+      "长势弱"
+    ],
+    "triggers": [
+      "干旱影响",
+      "土壤缺水"
+    ],
+    "reasoning_chain": "如果观察到甘蔗田出现缺苗或死苗现象，且原因为干旱影响，需进一步检查新植蔗种烂芽情况及宿根蔗低位芽存活情况。若低位芽尚有萌发力或烂芽较轻，或苗情矮小长势弱，则判定需要补苗。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤墒情",
+        "type": "categorical",
+        "options": [
+          "湿润",
+          "干旱",
+          "严重干旱"
+        ],
+        "description": "当前蔗田土壤水分状况",
+        "why_important": "决定是否需要立即灌溉配合补苗"
+      },
+      {
+        "name": "补苗材料",
+        "type": "categorical",
+        "options": [
+          "有",
+          "无"
+        ],
+        "description": "是否有可用的健康种苗",
+        "why_important": "决定补苗操作的可行性"
+      },
+      {
+        "name": "干旱持续时间",
+        "type": "numeric",
+        "options": [],
+        "description": "干旱发生的天数",
+        "why_important": "评估灾害严重程度及恢复难度"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "地块位置",
+        "type": "text",
+        "description": "蔗田的具体地理位置",
+        "why_important": "不同区域微气候影响恢复策略"
+      },
+      {
+        "name": "灌溉设施",
+        "type": "categorical",
+        "description": "是否有灌溉条件",
+        "why_important": "影响补苗后的成活率"
+      }
+    ],
+    "clarification_templates": {
+      "土壤墒情": "当前蔗田土壤湿度如何？是否已进行灌溉？",
+      "补苗材料": "您目前是否有备用的健康甘蔗种苗？",
+      "干旱持续时间": "干旱情况已经持续了多长时间？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "低位芽状态": "有萌发力",
+          "烂芽程度": "较轻"
+        },
+        "response_type": "complete_solution",
+        "content": "针对低位芽尚有萌发力且烂芽情况较轻的蔗田，建议及时进行补苗操作，以恢复群体密度。",
+        "follow_up_question": null,
+        "fallback_strategy": "若补苗困难，可考虑间种短期作物"
+      },
+      {
+        "condition_checks": {
+          "苗情": "矮小长势弱",
+          "环境条件": "干旱持续"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "对于蔗苗生长明显矮小、长势弱可能无法正常生长的情况，应及时进行补苗。同时需加强水分管理。",
+        "follow_up_question": "请问目前是否有灌溉水源保障补苗后的水分供应？",
+        "fallback_strategy": "若无水源，建议推迟至雨季补苗"
+      },
+      {
+        "condition_checks": {
+          "低位芽状态": "无萌发力",
+          "烂芽程度": "严重"
+        },
+        "response_type": "alternative_solution",
+        "content": "若宿根蔗低位芽无萌发力且烂芽严重，原宿根已无法利用，建议重新整地，种植新植蔗。",
+        "follow_up_question": null,
+        "fallback_strategy": "未提及"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定精确方案，请补充蔗田具体的干旱程度及种苗存活情况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱2.txt"
+}

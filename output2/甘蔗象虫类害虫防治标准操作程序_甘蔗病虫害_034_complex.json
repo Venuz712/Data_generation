@@ -1,0 +1,144 @@
+{
+  "meta": {
+    "title": "甘蔗象虫类害虫防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "成虫体长25～27毫米，体橘褐色",
+      "成虫体长18～35毫米，体红褐色、棕褐色或黑褐色",
+      "幼虫肥白，稍弯曲，蛀食甘蔗茎部",
+      "甘蔗嫩茎被咬食",
+      "植株受害"
+    ],
+    "triggers": [
+      "成虫5月始见，7月田间发生达到高峰",
+      "幼虫为害期为6月中旬至10月中旬",
+      "喜栖阴凉场所",
+      "历年受害重的田块"
+    ],
+    "reasoning_chain": "如果在5-7月观察到橘褐色或红褐色象虫成虫，且甘蔗茎部有蛀孔或嫩茎被咬食，结合6-10月幼虫活动期，可判定为赭色鸟喙象或竹直锥大象危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前甘蔗生育期",
+        "type": "categorical",
+        "options": [
+          "种植期",
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "不同生育期适用的防治方法不同，如种植期可用颗粒剂，生长期需喷雾"
+      },
+      {
+        "name": "田间环境类型",
+        "type": "categorical",
+        "options": [
+          "水田",
+          "坡地"
+        ],
+        "description": "种植地块的地形地貌",
+        "why_important": "决定轮作策略，水田可改种水稻，坡地需犁翻"
+      },
+      {
+        "name": "受害程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "当前虫害发生的严重程度",
+        "why_important": "决定是否需要采取轮作等激进措施或仅进行化学防治"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "历史用药记录",
+        "type": "text",
+        "description": "过去使用的农药种类",
+        "why_important": "避免抗药性，选择不同作用机理的药剂"
+      },
+      {
+        "name": "周边植被情况",
+        "type": "text",
+        "description": "附近是否有竹林等寄主植物",
+        "why_important": "竹直锥大象喜食竹笋，周边竹林可能加重虫害"
+      }
+    ],
+    "clarification_templates": {
+      "当前甘蔗生育期": "请问目前甘蔗处于哪个生长阶段？（如种植期、苗期、伸长期等）",
+      "田间环境类型": "请问您的甘蔗田是水田还是坡地？",
+      "受害程度": "请问目前田间受害植株的比例大概是多少？是否属于历年重发田块？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前甘蔗生育期": [
+            "种植期"
+          ],
+          "受害程度": [
+            "轻度",
+            "中度"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "在种蔗时，每公顷施用20％益舒宝颗粒剂或3％米乐尔颗粒剂75千克进行土壤处理，预防幼虫蛀食。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法获取颗粒剂，建议加强田间巡查"
+      },
+      {
+        "condition_checks": {
+          "当前甘蔗生育期": [
+            "伸长期",
+            "成熟期"
+          ],
+          "田间环境类型": [
+            "水田",
+            "坡地"
+          ],
+          "受害程度": [
+            "重度"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "对历年受害重的田块，要进行轮作，水田可改种水稻，坡地要及早犁翻，杀死成虫和蛹。同时发现受害株，连根挖起，杀死幼虫。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法轮作，需增加化学防治频率"
+      },
+      {
+        "condition_checks": {
+          "当前甘蔗生育期": [
+            "苗期",
+            "分蘖期",
+            "伸长期"
+          ],
+          "虫害阶段": [
+            "成虫盛发期",
+            "幼虫盛孵期"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "在成虫盛发期人工捕捉成虫。幼虫盛孵期每公顷用90％晶体敌百虫1250～1500克加水1500千克喷雾。成虫羽化期间用50％敌敌畏乳油或90％晶体敌百虫1000倍稀释液，每隔7天喷洒1次，连喷2～3次。",
+        "follow_up_question": null,
+        "fallback_strategy": "注意药剂安全间隔期"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键信息（如当前生育期、受害程度、环境类型），无法提供精准防治方案。建议先确认甘蔗生长阶段及田间环境，再选择相应措施。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

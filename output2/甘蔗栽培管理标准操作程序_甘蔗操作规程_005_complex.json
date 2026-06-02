@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "title": "甘蔗栽培管理标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "桂糖 44 号"
+    ],
+    "growth_stage": "苗期及滴灌系统安装期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "滴灌出水量差距大于0.1L/h",
+      "苗龄不在6-10周龄",
+      "株高不在3-8 cm",
+      "根系腐烂或有腐败气味",
+      "过滤器清洗不及时"
+    ],
+    "triggers": [
+      "主供水压力不足毛细管所需压力的120%",
+      "运输时间超过72小时",
+      "栽苗时段温度过高",
+      "苗源繁育技术合格率低于99%"
+    ],
+    "reasoning_chain": "如果滴灌测试出水量差距超标或苗情指标（苗龄、根系、株高）不符合标准，则判定为栽培管理异常，需立即采取清洗、更换或补植措施。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤墒情",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "积水"
+        ],
+        "description": "当前土壤水分状况",
+        "why_important": "决定滴灌开启频率和时长"
+      },
+      {
+        "name": "运输耗时",
+        "type": "numeric",
+        "description": "苗从出圃到抵达基地的小时数",
+        "why_important": "超过48小时需立即栽苗并保持湿润"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "清洗人力",
+        "type": "categorical",
+        "options": [
+          "有",
+          "无"
+        ],
+        "description": "是否有人工清洗滤芯条件",
+        "why_important": "决定采用人工清洗还是反冲清洗装置"
+      }
+    ],
+    "clarification_templates": {
+      "土壤墒情": "当前地块土壤湿度如何？",
+      "运输耗时": "种苗从出圃到抵达基地经过了多长时间？",
+      "清洗人力": "现场是否具备人工清洗滤芯的条件？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "滴灌测试": "达标",
+          "种苗状态": "合格"
+        },
+        "response_type": "complete_solution",
+        "content": "系统运行正常，种苗符合标准，按常规流程进行滴灌与定植。注意滴灌前12小时内及完成后6小时内清洗滤芯。",
+        "follow_up_question": null,
+        "fallback_strategy": "定期巡检滴灌压力"
+      },
+      {
+        "condition_checks": {
+          "滴灌测试": "不达标",
+          "差距值": ">0.1L/h"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "滴灌出水量不均，建议清洗或更换滴带，检查压力补偿功能。主供水压力需按毛细管所需压力的120%设计。",
+        "follow_up_question": "主管近端、中部、远端的压力读数分别是多少？",
+        "fallback_strategy": "检查线路接头是否渗漏"
+      },
+      {
+        "condition_checks": {
+          "运输耗时": ">48小时",
+          "根系状态": "异常"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "种苗运输超时或根系受损，需立即栽苗并保持湿润，避开高温时段（6-11点，15-18点）。",
+        "follow_up_question": "当前根系是否有腐烂或异味？",
+        "fallback_strategy": "建立供应商检疫制度，剔除弱苗"
+      }
+    ],
+    "default_response": {
+      "content": "请提供当前滴灌系统测试数据或种苗具体状态，以便给出准确建议。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

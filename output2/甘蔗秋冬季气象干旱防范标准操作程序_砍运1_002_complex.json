@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "title": "甘蔗秋冬季气象干旱防范标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "秋冬季（成熟期/收获前期）",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "阶段性气象干旱",
+      "土壤墒情下降",
+      "植株叶片卷曲或生长减缓"
+    ],
+    "triggers": [
+      "秋冬季降雨减少",
+      "气象干旱预测",
+      "山塘水库蓄水不足"
+    ],
+    "reasoning_chain": "如果预测秋冬季出现阶段性气象干旱且当前水源储备不足，则需启动防旱准备。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前干旱等级",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "当前气象干旱的严重程度",
+        "why_important": "决定防旱措施的紧迫性和投入力度"
+      },
+      {
+        "name": "水源储备量",
+        "type": "categorical",
+        "options": [
+          "充足",
+          "一般",
+          "不足"
+        ],
+        "description": "山塘水库及灌溉水源的当前蓄水量",
+        "why_important": "影响蓄水策略和用水分配方案"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "灌溉设施状况",
+        "type": "text",
+        "description": "现有灌溉设备的完好程度",
+        "why_important": "影响科学用水的效率和可行性"
+      }
+    ],
+    "clarification_templates": {
+      "当前干旱等级": "请问当地气象部门发布的干旱预警等级是多少？",
+      "水源储备量": "请问您的山塘水库当前蓄水量是否充足？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前干旱等级": "轻度",
+          "水源储备量": "充足"
+        },
+        "response_type": "complete_solution",
+        "content": "密切关注天气变化，利用降雨时机做好山塘水库蓄水，科学用水做好防旱准备，无需紧急干预。",
+        "follow_up_question": null,
+        "fallback_strategy": "若天气突变，立即启动应急灌溉预案"
+      },
+      {
+        "condition_checks": {
+          "当前干旱等级": "中度",
+          "水源储备量": "不足"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "需优先保障关键生育期用水，建议立即检修灌溉设施，并寻找替代水源。",
+        "follow_up_question": "请问您是否有备用水源或可调配的灌溉设备？",
+        "fallback_strategy": "联系当地农业部门申请抗旱补贴或技术支持"
+      }
+    ],
+    "default_response": {
+      "content": "建议密切关注秋冬季天气变化，提前利用降雨时机做好山塘水库蓄水，科学用水做好防旱准备。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "砍运1.txt"
+}

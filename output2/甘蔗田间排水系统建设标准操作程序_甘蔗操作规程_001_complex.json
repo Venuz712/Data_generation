@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "title": "甘蔗田间排水系统建设标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期（重点在苗期防涝）",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "主排水沟深度不足1米",
+      "排水沟宽度小于0.6米",
+      "雨后6小时内地表水位高于垄面1/2",
+      "雨后12小时后行间存在淤水",
+      "排水出水口堵塞或不通畅"
+    ],
+    "triggers": [
+      "雨季来临前未清理沟渠",
+      "地下水位天然偏高（距行间小于50cm）",
+      "地形严重低洼",
+      "土壤透水性差导致径流积聚"
+    ],
+    "reasoning_chain": "如果观察到雨后12小时内行间仍有淤水，且检查发现排水沟深度低于1米或出水口堵塞，则可判定为排水系统建设不达标或维护不当。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当地10年内最大降水量",
+        "type": "numeric",
+        "description": "用于计算排水出水最小设计流量的关键气象数据",
+        "why_important": "决定排水沟的设计流量是否满足防洪排涝需求（一般不低于12L/秒）"
+      },
+      {
+        "name": "当前地下水位高度",
+        "type": "numeric",
+        "description": "测量地面至地下水位的垂直距离",
+        "why_important": "判断是否需要采用特殊挖掘方案（如低于地下水位20cm以上）"
+      },
+      {
+        "name": "土壤质地类型",
+        "type": "categorical",
+        "options": [
+          "沙土",
+          "壤土",
+          "粘土"
+        ],
+        "description": "影响水分渗透速度和根系呼吸状况",
+        "why_important": "不同质地土壤对排水沟密度和深度的要求不同"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植地块总面积",
+        "type": "text",
+        "description": "需要建设排水系统的土地规模",
+        "why_important": "辅助评估排水工程的总体成本和工程量"
+      },
+      {
+        "name": "历史积水记录",
+        "type": "text",
+        "description": "该地块过去是否有过严重积水现象",
+        "why_important": "帮助判断现有排水设施的有效性"
+      }
+    ],
+    "clarification_templates": {
+      "当地10年内最大降水量": "请问您所在地区的10年内最大降水量数据是多少？这有助于确定排水沟的最小设计流量。",
+      "当前地下水位高度": "目前您地块的地下水位距离地表大约多少厘米？这将决定排水沟的深度标准。",
+      "土壤质地类型": "您的种植土壤主要是沙土、壤土还是粘土？这会影响排水系统的渗透效率。"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "地形条件": "非严重低洼",
+          "地下水位": "距行间大于50cm"
+        },
+        "response_type": "complete_solution",
+        "content": "按照标准规格开挖主排水沟：深度控制在1–1.5米，宽度0.6–1米。确保沟坡度连通至排出口，并设置动态巡查路线。验证标准为雨后6小时内地表水位低于垄面1/2，雨后12小时后行间不存在淤水。",
+        "follow_up_question": null,
+        "fallback_strategy": "若遇突发暴雨，临时增加抽水泵辅助排水"
+      },
+      {
+        "condition_checks": {
+          "地形条件": "严重低洼",
+          "地下水位": "距行间小于50cm"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "需开垦低于地下水位20cm以上的主排水沟。地形严重低洼处建议考虑建设水池蓄水，用于给水系统。请确认当地具体地下水位数值以精确计算挖掘深度。",
+        "follow_up_question": "请提供具体的地下水位测量数据，以便确认是否需要额外建设蓄水池。",
+        "fallback_strategy": "若无法深挖，优先保证出水口畅通并增设临时泵站"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键环境数据（如降水量、地下水位），无法给出精确的排水沟设计方案。建议先测量当地地下水位及查阅历史降雨数据，再参照标准参数（深1-1.5米，宽0.6-1米）进行施工。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "title": "甘蔗高粱舟蛾与天蛾防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "7-9月为害盛期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "叶片呈缺刻状",
+      "叶片上部全吃光仅剩中脉",
+      "初孵幼虫群集叶背啃食叶肉",
+      "成虫体长约26毫米，头和胸背面浅黄色",
+      "老熟幼虫体长约70毫米，体浅蓝绿色"
+    ],
+    "triggers": [
+      "高温多湿环境",
+      "7-9月间",
+      "广西蔗区局部发生",
+      "成虫趋光性",
+      "幼虫吐丝飘移"
+    ],
+    "reasoning_chain": "如果在7-9月高温多湿环境下，观察到甘蔗叶片出现缺刻或仅剩中脉，且发现浅蓝绿色老熟幼虫或浅黄色成虫，可判定为高粱舟蛾或甘蔗天蛾危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "虫害严重程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "受害叶片占田间总叶片的比例",
+        "why_important": "决定是否需要化学防治及用药浓度"
+      },
+      {
+        "name": "幼虫龄期",
+        "type": "categorical",
+        "options": [
+          "低龄",
+          "高龄"
+        ],
+        "description": "幼虫发育阶段，影响抗药性",
+        "why_important": "低龄幼虫易防治，高龄需更强药剂"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "前茬用药情况",
+        "type": "text",
+        "description": "近期使用的农药种类",
+        "why_important": "避免产生抗药性或药害"
+      },
+      {
+        "name": "田间杂草情况",
+        "type": "text",
+        "description": "蔗地周边植被状况",
+        "why_important": "成虫白天静伏场所，影响捕捉效果"
+      }
+    ],
+    "clarification_templates": {
+      "虫害严重程度": "请问目前甘蔗叶片受害比例大约是多少？",
+      "幼虫龄期": "您观察到的幼虫大小如何？是否已吐丝分散？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "幼虫龄期": "低龄",
+          "虫害严重程度": "轻度"
+        },
+        "response_type": "complete_solution",
+        "content": "建议优先人工捕捉成虫和幼虫，针对低龄幼虫喷洒90％晶体敌百虫800倍稀释液或80％敌敌畏乳油1000倍稀释液。",
+        "follow_up_question": null,
+        "fallback_strategy": "未提及"
+      },
+      {
+        "condition_checks": {
+          "幼虫龄期": "高龄",
+          "虫害严重程度": "重度"
+        },
+        "response_type": "complete_solution",
+        "content": "立即喷洒2.5％敌杀死2000～3000倍稀释液或10％灭百可2000～3000倍稀释液，重点防治暴食期幼虫，并清除田间虫源。",
+        "follow_up_question": null,
+        "fallback_strategy": "未提及"
+      },
+      {
+        "condition_checks": {
+          "虫害严重程度": "未知"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "建议先进行人工捕捉，并观察幼虫发育阶段。若确认危害严重，再考虑化学防治。",
+        "follow_up_question": "请问目前田间受害叶片比例大概是多少？",
+        "fallback_strategy": "未提及"
+      }
+    ],
+    "default_response": {
+      "content": "请提供具体的虫害症状描述及发生环境信息，以便制定精准方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

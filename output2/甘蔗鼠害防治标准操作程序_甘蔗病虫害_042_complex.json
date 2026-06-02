@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "title": "甘蔗鼠害防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "褐家鼠：体躯肥大，体长150～250毫米，头小吻短，耳短而厚向前翻不到眼，体背棕褐色或灰褐色",
+      "黄毛鼠：体长140～160毫米，尾细，耳小而薄前翻不达眼部，后足短，体背黄褐色或棕褐色，腹面毛灰白色，四足背毛白色",
+      "田间发现鼠洞、鼠道或甘蔗茎秆被啃食痕迹"
+    ],
+    "triggers": [
+      "昼夜活动，野外鼠早晨和黄昏最频繁",
+      "杂食性，喜吃糖类、水分较多的食品",
+      "田边杂草丛生或有甘蔗枯叶覆盖提供隐蔽场所"
+    ],
+    "reasoning_chain": "如果观察到体长150-250mm且耳短厚的棕褐色鼠类，或体长140-160mm且腹面灰白的黄褐色鼠类，结合晨昏活动规律及甘蔗被啃食痕迹，可判定为褐家鼠或黄毛鼠危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "infestation_level",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "当前甘蔗田鼠害发生的严重程度",
+        "why_important": "决定采用物理防治还是化学毒饵诱杀的关键依据"
+      },
+      {
+        "name": "livestock_presence",
+        "type": "boolean",
+        "options": null,
+        "description": "蔗田周边是否有牲畜或家禽活动",
+        "why_important": "使用毒饵时需确保人畜安全，若有牲畜需避免化学药剂"
+      },
+      {
+        "name": "weather_condition",
+        "type": "categorical",
+        "options": [
+          "晴天",
+          "雨天",
+          "阴天"
+        ],
+        "description": "当前的天气状况",
+        "why_important": "投放毒饵应选择晴天的晚上，雨天影响药效和适口性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "previous_control_history",
+        "type": "text",
+        "description": "近期是否使用过其他灭鼠方法",
+        "why_important": "避免重复用药产生抗性或环境污染"
+      },
+      {
+        "name": "field_location",
+        "type": "categorical",
+        "description": "甘蔗种植的具体位置环境",
+        "why_important": "区分野外鼠与室内鼠的活动规律差异"
+      }
+    ],
+    "clarification_templates": {
+      "infestation_level": "请问目前甘蔗田里老鼠活动的频繁程度如何？是偶尔见到还是随处可见？",
+      "livestock_presence": "您的蔗田附近是否有放养的牲畜或家禽？这关系到能否使用毒饵。",
+      "weather_condition": "今天晚上的天气情况如何？是否适合进行户外投药作业？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "infestation_level": "轻度",
+          "livestock_presence": true
+        },
+        "response_type": "complete_solution",
+        "content": "建议优先采用物理和农业防治措施。①结合田间管理，铲除田边杂草，剥除甘蔗枯叶，破坏其栖息环境。②对隐藏于洞穴的老鼠，采取挖洞、烟熏、水灌等捕杀。③在老鼠出没的地方采用鼠夹、鼠笼、竹弓等器械捕杀。暂不使用化学毒饵以保障牲畜安全。",
+        "follow_up_question": null,
+        "fallback_strategy": "若物理防治效果不佳，需评估牲畜隔离可能性后再考虑低毒慢性药物。"
+      },
+      {
+        "condition_checks": {
+          "infestation_level": "重度",
+          "livestock_presence": false,
+          "weather_condition": "晴天"
+        },
+        "response_type": "complete_solution",
+        "content": "可采用化学毒饵诱杀。①选择急性杀鼠剂磷化锌（浓度0.5％～3％）或慢性杀鼠剂敌鼠钠盐（浓度0.05％～0.1％）。②配制时充分搅拌晾干，可用粘附法将毒药与稻谷、玉米等拌匀。③选择晴天的晚上，按5～7米一堆，每堆20～40克投饵毒杀。④投药应投在鼠道上、鼠洞旁。注意人、畜安全。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无专业配药条件，建议使用市售毒饵并按说明使用。"
+      },
+      {
+        "condition_checks": {
+          "infestation_level": "中度",
+          "livestock_presence": "未知"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "目前信息不足以确定最佳方案。建议先进行田间管理（铲除杂草、剥除枯叶）并设置机械捕杀装置。关于是否使用毒饵，需要确认周边是否有牲畜活动。",
+        "follow_up_question": "请确认蔗田周边是否有牲畜或家禽活动？这将决定我们是否可以投放毒饵。",
+        "fallback_strategy": "若无法确认牲畜情况，一律按有牲畜处理，仅使用物理防治。"
+      }
+    ],
+    "default_response": {
+      "content": "检测到甘蔗鼠害风险，但缺少关键环境信息。为了制定安全的防治方案，请先告知您所在区域的鼠害严重程度以及周边是否有牲畜活动。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

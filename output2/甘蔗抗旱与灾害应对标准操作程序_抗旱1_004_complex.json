@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "title": "甘蔗抗旱与灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "桂糖42号",
+      "桂糖60号",
+      "桂糖76号",
+      "桂糖44号",
+      "桂糖47号",
+      "桂糖55号"
+    ],
+    "growth_stage": "种植期及宿根管理期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "土壤严重干旱",
+      "宿根蔗粘性土壤",
+      "气温偏低",
+      "黑穗病高发风险"
+    ],
+    "triggers": [
+      "无灌溉条件",
+      "旱情缓解前",
+      "桂北蔗区",
+      "宿根蔗管理期"
+    ],
+    "reasoning_chain": "如果处于春种期且无灌溉条件，则采用运水淋水种植；如果宿根蔗处于严重干旱且为粘性土壤，则旱情缓解前不清理蔗叶，待雨后再松土。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "灌溉条件",
+        "type": "categorical",
+        "options": [
+          "有灌溉",
+          "无灌溉"
+        ],
+        "description": "地块是否具备灌溉设施",
+        "why_important": "决定采用滴灌一体化还是运水淋水种植模式"
+      },
+      {
+        "name": "种植类型",
+        "type": "categorical",
+        "options": [
+          "新植",
+          "宿根"
+        ],
+        "description": "当前甘蔗是当年新种还是宿根再生",
+        "why_important": "宿根蔗在干旱时的管理措施（如留叶）与新植不同"
+      },
+      {
+        "name": "土壤类型",
+        "type": "categorical",
+        "options": [
+          "粘性",
+          "沙性",
+          "壤土"
+        ],
+        "description": "土壤质地类型",
+        "why_important": "粘性土壤宿根蔗在干旱时需特殊处理（不清理蔗叶）"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "预计降雨时间",
+        "type": "text",
+        "description": "未来几天的降雨预报",
+        "why_important": "决定何时进行开垄松蔸操作"
+      },
+      {
+        "name": "地块面积",
+        "type": "text",
+        "description": "种植规模",
+        "why_important": "用于估算用水量和肥料需求"
+      }
+    ],
+    "clarification_templates": {
+      "灌溉条件": "请问您的蔗地是否有灌溉设施？",
+      "种植类型": "当前种植的是新植甘蔗还是宿根甘蔗？",
+      "土壤类型": "您的地块土壤质地主要是粘性还是沙性？",
+      "预计降雨时间": "近期是否有降雨预报？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "灌溉条件": "无灌溉",
+          "种植类型": "新植"
+        },
+        "response_type": "complete_solution",
+        "content": "采用运水淋水种植和地膜覆盖技术。开挖蔗沟，淋水摆种或下种摆种后喷雾器淋蔗种、施肥、施药，覆盖地膜。推广抗旱节水灌溉播种技术，采用一次性施肥技术。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法运水，建议推迟种植等待降雨。"
+      },
+      {
+        "condition_checks": {
+          "种植类型": "宿根",
+          "土壤类型": "粘性",
+          "灌溉条件": "无灌溉"
+        },
+        "response_type": "complete_solution",
+        "content": "对严重干旱的粘性土壤宿根蔗，在旱情缓解前先不清理蔗叶，利用蔗叶覆盖保温保墒，保护蔗芽。待雨后再及时进行开垄松蔸加盖膜。开垄时要紧贴蔗蔸两边，深达蔗蔸基部，株间松土要深。",
+        "follow_up_question": null,
+        "fallback_strategy": "若旱情持续，需人工淋水保护蔗芽。"
+      },
+      {
+        "condition_checks": {
+          "区域气候": "桂北蔗区",
+          "病害风险": "黑穗病高发"
+        },
+        "response_type": "alternative_solution",
+        "content": "在气温偏低的桂北蔗区，优先选择桂糖44号、桂糖47号。在黑穗病高发区，推广种植抗病性较好桂糖47号、桂糖55号、桂糖76号。",
+        "follow_up_question": "请问您所在的具体蔗区是哪里？是否有黑穗病历史？",
+        "fallback_strategy": "若品种不可得，加强田间监测和药剂预防。"
+      }
+    ],
+    "default_response": {
+      "content": "为了提供更准确的甘蔗灾害应对方案，请补充您的种植区域、当前种植阶段（新植或宿根）以及灌溉条件。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱1.txt"
+}

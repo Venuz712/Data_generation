@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "title": "甘蔗干旱播种应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "播种期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "气象干旱严重",
+      "土壤墒情不足",
+      "具备灌溉条件",
+      "不具备灌溉条件"
+    ],
+    "triggers": [
+      "长期无降雨",
+      "土壤含水量低于播种适宜值",
+      "灌溉设施缺失或故障"
+    ],
+    "reasoning_chain": "如果气象干旱严重且具备灌溉条件，则可判定为适合抢种；如果气象干旱严重且不具备灌溉条件，则判定为不宜盲目抢种，需等待雨后。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤含水量",
+        "type": "numeric",
+        "options": [],
+        "description": "当前田块土壤的相对含水量百分比",
+        "why_important": "决定是否需要等待雨后或可以抢种的关键指标"
+      },
+      {
+        "name": "近期降雨概率",
+        "type": "categorical",
+        "options": [
+          "高",
+          "中",
+          "低"
+        ],
+        "description": "未来3-5天内的降雨可能性",
+        "why_important": "影响等待雨后播种的决策时效性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "甘蔗品种耐旱性",
+        "type": "categorical",
+        "description": "所种植甘蔗品种的抗旱能力等级",
+        "why_important": "不同品种对干旱的耐受度不同，影响烂种风险"
+      },
+      {
+        "name": "灌溉成本预算",
+        "type": "text",
+        "description": "农户可接受的灌溉投入范围",
+        "why_important": "影响是否选择抢种的经济决策"
+      }
+    ],
+    "clarification_templates": {
+      "土壤含水量": "请问您目前蔗田的土壤湿度如何？是否达到手握成团、落地即散的状态？",
+      "近期降雨概率": "根据当地气象预报，未来一周内是否有降雨预期？",
+      "灌溉条件": "您的蔗田是否具备完善的灌溉设施？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "灌溉条件": "具备",
+          "干旱程度": "严重"
+        },
+        "response_type": "complete_solution",
+        "content": "建议及时抢种。请确保灌溉水源充足，播种后及时浇水保湿，防止种子干枯。",
+        "follow_up_question": null,
+        "fallback_strategy": "若灌溉水源不稳定，建议先小面积试种"
+      },
+      {
+        "condition_checks": {
+          "灌溉条件": "不具备",
+          "干旱程度": "严重"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "不宜盲目抢种，避免干旱烂种。建议待雨后采取“三芽段＋尾梢不剥叶”下种方式播种，以提高保水能力。",
+        "follow_up_question": "请问您预计何时会有降雨？以便规划最佳播种时间。",
+        "fallback_strategy": "若长期无雨，考虑更换耐旱品种或推迟至雨季"
+      }
+    ],
+    "default_response": {
+      "content": "当前气象干旱严重，种植决策需依据灌溉条件而定。请确认您的蔗田是否具备灌溉条件，以便提供具体建议。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱1.txt"
+}

@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "title": "甘蔗追肥培土标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "生长中后期（9月前）",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "植株长势不旺",
+      "茎秆细弱",
+      "有倒伏隐患",
+      "糖分积累缓慢"
+    ],
+    "triggers": [
+      "进入9月前的关键生长期",
+      "前期基肥不足",
+      "多雨大风天气预警",
+      "土壤养分利用率低"
+    ],
+    "reasoning_chain": "如果当前时间处于9月前，且观察到甘蔗长势较弱、茎秆细弱或面临倒伏风险，则可判定需要立即执行追肥与培土措施以增强抗逆性。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前日期",
+        "type": "categorical",
+        "options": [
+          "9月前",
+          "9月后"
+        ],
+        "description": "判断是否处于追肥适宜窗口期",
+        "why_important": "原文明确指出9月前应结合长势追肥，错过时机效果不佳"
+      },
+      {
+        "name": "甘蔗长势",
+        "type": "categorical",
+        "options": [
+          "旺盛",
+          "一般",
+          "偏弱"
+        ],
+        "description": "评估是否需要加强营养投入",
+        "why_important": "决定施肥量及是否重点进行大培土"
+      },
+      {
+        "name": "近期天气",
+        "type": "categorical",
+        "options": [
+          "晴朗",
+          "降雨",
+          "大风"
+        ],
+        "description": "影响施肥吸收及无人机作业可行性",
+        "why_important": "降雨前不宜施肥，大风影响无人机喷洒"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "植保无人机可用性",
+        "type": "boolean",
+        "description": "是否具备叶面肥喷施条件",
+        "why_important": "决定能否执行磷酸二氢钾和尿素叶面追肥方案"
+      },
+      {
+        "name": "历史施肥记录",
+        "type": "text",
+        "description": "此前已使用的肥料种类和数量",
+        "why_important": "避免重复施肥导致烧苗或浪费"
+      }
+    ],
+    "clarification_templates": {
+      "当前日期": "请问您所在的地区当前是否已进入9月份？",
+      "甘蔗长势": "目前甘蔗的茎秆粗细和高度如何？是否存在倒伏迹象？",
+      "近期天气": "未来3天内是否有降雨或大风预报？",
+      "植保无人机可用性": "您是否拥有或可以租赁植保无人机进行叶面肥喷施？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前日期": "9月前",
+          "甘蔗长势": "一般",
+          "近期天气": "晴朗"
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即执行标准追肥培土方案。每亩施用甘蔗配方复合肥20～25公斤，施肥后及时进行中耕大培土，以提高抗倒伏能力。若具备条件，可结合植保无人机追施叶面肥（磷酸二氢钾120克+尿素400克/亩），促进产量和糖分积累。",
+        "follow_up_question": "",
+        "fallback_strategy": "若无复合肥，可用氮磷钾比例均衡的通用复合肥替代"
+      },
+      {
+        "condition_checks": {
+          "当前日期": "9月前",
+          "甘蔗长势": "偏弱",
+          "近期天气": "晴朗"
+        },
+        "response_type": "complete_solution",
+        "content": "鉴于长势偏弱，除常规追肥外，重点加强大培土深度以稳固根系。建议优先保证每亩25公斤复合肥用量，并务必实施叶面肥喷施（磷酸二氢钾120克+尿素400克/亩），快速补充营养缓解长势问题。",
+        "follow_up_question": "",
+        "fallback_strategy": "若无法进行大培土，可增加培土次数分次进行"
+      },
+      {
+        "condition_checks": {
+          "当前日期": "9月后",
+          "甘蔗长势": "任意",
+          "近期天气": "任意"
+        },
+        "response_type": "alternative_solution",
+        "content": "已过9月最佳追肥期，此时大量追肥可能导致贪青晚熟。建议仅进行少量叶面肥补充（磷酸二氢钾为主），停止重化肥追施，重点做好病虫害防治以防早衰。",
+        "follow_up_question": "请确认具体日期，以便调整后续管理策略。",
+        "fallback_strategy": "咨询当地农技站获取针对晚期的特定管理建议"
+      }
+    ],
+    "default_response": {
+      "content": "检测到信息不足以制定精准方案。为了提供准确的甘蔗追肥指导，请补充当前日期、甘蔗长势情况及近期天气预报。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻.txt"
+}

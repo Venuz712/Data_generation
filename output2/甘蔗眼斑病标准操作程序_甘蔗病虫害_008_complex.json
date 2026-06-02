@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "title": "甘蔗眼斑病标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [
+      "大多数栽培品种（除 C0419、福引 8 号外）"
+    ],
+    "growth_stage": "全生育期（4 月开始发生，7-8 月高峰）",
+    "source": "甘蔗眼斑病防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "嫩叶水渍状小点",
+      "长圆形病斑（红褐色中心，淡黄色晕圈）",
+      "黄鳝斑（与叶脉平行的坏死条纹）",
+      "病斑上生出暗色霉状物"
+    ],
+    "triggers": [
+      "相对湿度 80％～88％",
+      "温度 20～28℃",
+      "高温多湿",
+      "重施氮肥",
+      "种植感病品种"
+    ],
+    "reasoning_chain": "如果观察到嫩叶上有红褐色中心带黄晕的眼状病斑，且伴随与叶脉平行的长条坏死斑（黄鳝斑），同时环境处于高温高湿（20-28℃，湿度 80% 以上），则可判定为甘蔗眼斑病。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "种植品种",
+        "type": "categorical",
+        "options": [
+          "C0419",
+          "福引 8 号",
+          "其他抗病品种"
+        ],
+        "description": "当前种植的甘蔗品种名称",
+        "why_important": "C0419 和福引 8 号为感病品种，需重点防治"
+      },
+      {
+        "name": "发病阶段",
+        "type": "categorical",
+        "options": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "description": "病害发展的程度",
+        "why_important": "初期可剪除病叶，后期需加强化学防治"
+      },
+      {
+        "name": "田间湿度",
+        "type": "categorical",
+        "options": [
+          "高湿",
+          "正常",
+          "低湿"
+        ],
+        "description": "当前蔗田的相对湿度状况",
+        "why_important": "高湿环境（80%-88%）是发病关键诱因"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "施肥情况",
+        "type": "text",
+        "description": "近期氮肥施用情况",
+        "why_important": "重施氮肥易诱发本病"
+      }
+    ],
+    "clarification_templates": {
+      "种植品种": "请问您目前种植的是哪个甘蔗品种？",
+      "发病阶段": "请问病斑主要处于哪个阶段（初期小点还是后期条斑）？",
+      "田间湿度": "当前蔗田是否处于积水或高湿状态？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "发病阶段": "初期",
+          "种植品种": "其他抗病品种"
+        },
+        "response_type": "complete_solution",
+        "content": "1. 剪除发病中心的病叶并烧毁。2. 喷施 50％多菌灵或 50％苯来特可湿性粉剂 1000 倍液。3. 加强排水，避免积水。",
+        "follow_up_question": null,
+        "fallback_strategy": "若病情扩散，转为重症方案"
+      },
+      {
+        "condition_checks": {
+          "发病阶段": "后期",
+          "种植品种": "C0419 或福引 8 号"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "1. 立即剪除重病叶烧毁。2. 喷施 1:1:100 波尔多液或苯来特 1000 倍液。3. 建议下一季更换抗病品种。",
+        "follow_up_question": "请问当前田间湿度是否超过 80%？",
+        "fallback_strategy": "若无法控制，考虑毁种"
+      }
+    ],
+    "default_response": {
+      "content": "为了提供更准确的防治建议，请补充当前种植品种及发病严重程度。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

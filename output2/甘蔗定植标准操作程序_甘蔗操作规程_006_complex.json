@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "title": "甘蔗定植标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "定植期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "每孔定植1株",
+      "定植深度与营养基料齐平",
+      "覆土约0.5公分",
+      "轻压根部土壤"
+    ],
+    "triggers": [
+      "株距40cm",
+      "行距140cm",
+      "定植温度20-35℃",
+      "严禁种深",
+      "严禁重压"
+    ],
+    "reasoning_chain": "若定植深度超过1cm或覆土过重，易导致缺氧烂根；若温度低于20℃或高于35℃，影响成活率。需确保株行距符合标准以利于通风透光。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "实际膜下温度",
+        "type": "numeric",
+        "options": [],
+        "description": "定植时的土壤膜下温度",
+        "why_important": "温度直接影响根系恢复和成活率，需控制在20-35℃"
+      },
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "过干",
+          "适宜",
+          "过湿"
+        ],
+        "description": "定植时土壤含水量",
+        "why_important": "影响根系与土壤接触及呼吸"
+      },
+      {
+        "name": "成活率抽检标准",
+        "type": "numeric",
+        "options": [],
+        "description": "定植后5天抽检的成活率百分比阈值",
+        "why_important": "用于评估定植质量是否达标"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植地块类型",
+        "type": "text",
+        "description": "地块土壤质地",
+        "why_important": "不同质地土壤保水保肥能力不同，影响定植深度微调"
+      }
+    ],
+    "clarification_templates": {
+      "实际膜下温度": "请问当前膜下温度是多少？是否在20-35℃范围内？",
+      "土壤湿度": "当前土壤湿度是否适宜？是否存在过干或积水情况？",
+      "成活率抽检标准": "您设定的5天后成活率抽检标准是多少百分比？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "实际膜下温度": "20-35",
+          "定植深度": "≤1cm",
+          "覆土操作": "轻压"
+        },
+        "response_type": "complete_solution",
+        "content": "当前条件适宜定植。请保持每孔1株，深度与基料齐平，覆土0.5cm并轻压。定植后5天进行成活率抽检。",
+        "follow_up_question": "",
+        "fallback_strategy": "若遇突发降温，建议覆盖保温膜。"
+      },
+      {
+        "condition_checks": {
+          "实际膜下温度": "<20 或 >35",
+          "定植深度": "任意"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "当前温度不适宜定植，存在风险。建议调整定植时间或采取保温/降温措施。请确认当前具体温度及是否有补救措施。",
+        "follow_up_question": "是否具备调节膜下温度的设施？",
+        "fallback_strategy": "暂停定植，等待温度回升或下降至适宜范围。"
+      },
+      {
+        "condition_checks": {
+          "定植深度": ">1cm",
+          "覆土操作": "重压"
+        },
+        "response_type": "alternative_solution",
+        "content": "检测到操作风险，深栽易导致烂根。建议立即松土调整深度至齐平，并停止重压。",
+        "follow_up_question": "",
+        "fallback_strategy": "若已定植过深，需小心浅锄表层土壤，避免伤根。"
+      }
+    ],
+    "default_response": {
+      "content": "缺少关键环境参数（如温度、湿度），无法给出确切建议。请先测量膜下温度及土壤状况。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

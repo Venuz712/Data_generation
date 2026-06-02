@@ -1,0 +1,122 @@
+{
+  "meta": {
+    "title": "甘蔗养分管理与植保标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "养分总量参考标准（氮12kg、磷8kg、钾18kg等）",
+      "拔节期前高氮禁忌",
+      "地下虫防治时机（起垄前）",
+      "药剂暴露风险",
+      "药效不足表现"
+    ],
+    "triggers": [
+      "拔节期前生长阶段",
+      "雨水冲刷或地块粘重",
+      "药剂长时间暴露",
+      "养分补充不足"
+    ],
+    "reasoning_chain": "如果处于拔节期前，则严禁大剂量高氮；如果进行地下虫防治，需在起垄前撒施并立即覆土；如果药效不足，需检查环境因素并考虑追加。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前生育期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "拔节期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "决定施肥种类和用量，特别是氮素使用限制"
+      },
+      {
+        "name": "土壤类型",
+        "type": "categorical",
+        "options": [
+          "沙土",
+          "壤土",
+          "粘土"
+        ],
+        "description": "地块的土壤质地",
+        "why_important": "影响药剂持效性和肥料流失速度"
+      },
+      {
+        "name": "近期天气",
+        "type": "categorical",
+        "options": [
+          "晴朗",
+          "降雨",
+          "大风"
+        ],
+        "description": "施药或施肥前后的天气状况",
+        "why_important": "影响药剂吸收和是否被雨水冲刷"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植规模",
+        "type": "text",
+        "description": "种植面积大小",
+        "why_important": "决定机械化或无人机作业的选择"
+      },
+      {
+        "name": "预算限制",
+        "type": "text",
+        "description": "投入成本预算",
+        "why_important": "影响肥料和药剂的选择方案"
+      }
+    ],
+    "clarification_templates": {
+      "当前生育期": "请问甘蔗目前处于哪个生长阶段？（苗期、拔节期或成熟期）",
+      "土壤类型": "请问地块的土壤质地是沙土、壤土还是粘土？",
+      "近期天气": "请问近期是否有降雨或大风天气？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前生育期": "苗期或拔节期前",
+          "管理目标": "养分补给"
+        },
+        "response_type": "complete_solution",
+        "content": "严禁大规模大剂量使用高氮肥料。遵循“不缺、不多、少量多次”原则。推荐养分总量：氮12kg、磷8kg、钾18kg、钙3kg、镁3kg。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法确定生育期，建议先进行叶片营养诊断。"
+      },
+      {
+        "condition_checks": {
+          "管理目标": "地下虫防治",
+          "环境条件": "起垄前"
+        },
+        "response_type": "complete_solution",
+        "content": "土地平整后，起垄前，按每亩3千克施用地下虫防治药剂（有效成分）。撒施后立即起垄，避免药剂长时间暴露于空气中。",
+        "follow_up_question": null,
+        "fallback_strategy": "若已起垄，需检查药剂暴露情况，必要时补培土。"
+      },
+      {
+        "condition_checks": {
+          "管理目标": "地下虫防治",
+          "环境条件": "药效不足"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "检查是否因雨水冲刷或地块粘重影响。必要时追加半量药剂。",
+        "follow_up_question": "请问近期是否有大雨冲刷或地块是否过于粘重？",
+        "fallback_strategy": "若追加后仍无效，建议更换药剂类型。"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定具体方案，请补充甘蔗生长阶段、土壤情况及具体管理目标。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

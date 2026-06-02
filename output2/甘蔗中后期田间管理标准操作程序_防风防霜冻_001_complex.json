@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "title": "甘蔗中后期田间管理标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "中后期",
+    "source": "农业农村部种植业管理司等指导意见",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "连续降雨",
+      "台风天气",
+      "田间涝渍",
+      "甘蔗倒伏",
+      "高温高湿环境"
+    ],
+    "triggers": [
+      "连续降雨",
+      "台风",
+      "高温高湿"
+    ],
+    "reasoning_chain": "若观察到连续降雨或台风天气导致田间积水，且甘蔗出现倒伏迹象，则判定为涝渍灾害风险；若处于高温高湿环境，则判定为病虫害高发风险。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "灾害具体类型",
+        "type": "categorical",
+        "options": [
+          "涝渍",
+          "倒伏",
+          "病虫害"
+        ],
+        "description": "当前面临的主要灾害类型",
+        "why_important": "决定采取排水扶正还是植保措施"
+      },
+      {
+        "name": "受灾程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "灾害对甘蔗的影响程度",
+        "why_important": "影响补救措施的强度和紧迫性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "土壤质地",
+        "type": "text",
+        "description": "田块土壤类型",
+        "why_important": "影响排水速度和根系恢复能力"
+      },
+      {
+        "name": "用药历史",
+        "type": "text",
+        "description": "近期是否使用过农药",
+        "why_important": "避免药害和抗药性产生"
+      }
+    ],
+    "clarification_templates": {
+      "灾害具体类型": "请问目前田间主要问题是积水、倒伏还是出现了病虫害？",
+      "受灾程度": "请问受灾面积比例或严重程度如何？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "灾害具体类型": [
+            "涝渍",
+            "倒伏"
+          ],
+          "受灾程度": [
+            "轻度",
+            "中度"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "针对涝渍和倒伏风险：1. 及时开沟排水，降低地下水位；2. 对倒伏甘蔗进行扶正培土，防止腐烂；3. 雨后适当追施速效肥，促进恢复生长。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法立即排水，优先清理田间杂草增加通风透光。"
+      },
+      {
+        "condition_checks": {
+          "灾害具体类型": [
+            "病虫害"
+          ],
+          "受灾程度": [
+            "轻度",
+            "中度",
+            "重度"
+          ]
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "针对高温高湿引发的病虫害：1. 加强田间监测，重点检查叶斑病和螟虫；2. 清除病残体，减少菌源；3. 建议根据具体病虫害种类选择对口药剂进行预防或治疗。",
+        "follow_up_question": "请问具体观察到的是哪种病害症状或虫害形态？",
+        "fallback_strategy": "若无法确定具体种类，优先选用广谱性生物农药进行保护性防治。"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以提供精准指导。甘蔗中后期管理需重点关注天气变化，建议先排查田间是否存在积水或病虫害迹象，以便制定针对性措施。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻.txt"
+}

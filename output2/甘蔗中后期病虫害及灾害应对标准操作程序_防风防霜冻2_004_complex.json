@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "甘蔗中后期病虫害及灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "生长中后期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "螟虫危害",
+      "蓟马危害",
+      "绵蚜危害",
+      "梢腐病",
+      "褐条病",
+      "赤腐病",
+      "锈病",
+      "褐斑病",
+      "蔗田倒伏"
+    ],
+    "triggers": [
+      "生长中后期",
+      "病虫害并发",
+      "台风导致连片倒伏"
+    ],
+    "reasoning_chain": "如果处于甘蔗生长中后期且监测到特定病虫害症状或遭遇台风倒伏，则需启动相应的统防统治措施。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "病情严重程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "田间病虫害发生的密度和危害程度",
+        "why_important": "决定用药浓度和施药频率"
+      },
+      {
+        "name": "当前天气状况",
+        "type": "categorical",
+        "options": [
+          "晴朗",
+          "阴雨",
+          "大风"
+        ],
+        "description": "施药时的气象条件",
+        "why_important": "影响药效发挥及施药安全"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "施药设备类型",
+        "type": "text",
+        "description": "使用的喷雾器械",
+        "why_important": "影响药液沉降和覆盖效果"
+      }
+    ],
+    "clarification_templates": {
+      "病情严重程度": "请问目前田间病虫害发生的密度大概是多少？是零星发生还是普遍发生？",
+      "当前天气状况": "请问未来 24 小时内是否有降雨或大风天气？",
+      "施药设备类型": "您计划使用植保无人机还是机动高压喷雾器进行施药？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "病虫害类型": "单一或初期",
+          "天气状况": "晴朗"
+        },
+        "response_type": "complete_solution",
+        "content": "针对螟虫可选用氯虫苯甲酰胺、阿维菌素等；针对蓟马、绵蚜可选用噻虫嗪、吡虫啉；针对病害可选用百菌清、多菌灵等。选择早上 10 点之前或下午 4 点以后进行叶面喷施。",
+        "follow_up_question": null,
+        "fallback_strategy": "若效果不佳，建议增加施药次数或更换作用机理不同的药剂"
+      },
+      {
+        "condition_checks": {
+          "病虫害类型": "多种并发",
+          "天气状况": "台风后倒伏"
+        },
+        "response_type": "alternative_solution",
+        "content": "提倡科学复配“杀菌剂 + 杀虫剂 + 叶面肥 + 沉降助剂”，采用植保无人机或机动高压喷雾器统防统治。特别注意因倒伏导致的鼠害防控。",
+        "follow_up_question": "请问倒伏面积比例是多少？是否有发现鼠害活动迹象？",
+        "fallback_strategy": "若无法统防统治，优先处理发病中心"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键信息（如病虫害具体种类、严重程度、天气状况等），无法提供精准方案。请补充相关信息以便制定针对性措施。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻2.txt"
+}

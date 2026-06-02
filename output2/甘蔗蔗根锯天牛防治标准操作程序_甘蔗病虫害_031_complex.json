@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "title": "甘蔗蔗根锯天牛防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "死苗缺株",
+      "蔗根被蛀空",
+      "茎基部有隧道",
+      "蛀孔向上延伸 30-60 厘米"
+    ],
+    "triggers": [
+      "坡地沙质土",
+      "多年宿根蔗",
+      "夜间活动",
+      "成虫趋光性"
+    ],
+    "reasoning_chain": "如果观察到甘蔗出现死苗缺株且茎基部有蛀孔或隧道，结合种植地为坡地沙质土或多年宿根蔗，可判定为蔗根锯天牛危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "种植模式",
+        "type": "categorical",
+        "options": [
+          "新植蔗",
+          "宿根蔗"
+        ],
+        "description": "甘蔗当前的种植年份类型",
+        "why_important": "宿根蔗受害通常较新植蔗严重，且防治时机不同"
+      },
+      {
+        "name": "土壤质地",
+        "type": "categorical",
+        "options": [
+          "沙质土",
+          "黏土",
+          "壤土"
+        ],
+        "description": "种植地的土壤类型",
+        "why_important": "坡地沙质土受害较多，影响防治策略选择"
+      },
+      {
+        "name": "危害程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "重度"
+        ],
+        "description": "田间虫害发生的严重性",
+        "why_important": "决定是否需要使用化学农药或仅采用物理/生物防治"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "灯光设施",
+        "type": "text",
+        "description": "是否有条件进行灯光诱杀",
+        "why_important": "成虫有趋光性，灯光诱杀是有效辅助手段"
+      },
+      {
+        "name": "轮作计划",
+        "type": "text",
+        "description": "下一季计划种植的作物",
+        "why_important": "轮作可减轻为害，需确认是否可行"
+      }
+    ],
+    "clarification_templates": {
+      "种植模式": "请问当前甘蔗是新植还是宿根？",
+      "土壤质地": "请问种植地的土壤类型是沙质土还是其他？",
+      "危害程度": "田间死苗缺株情况严重吗？",
+      "灯光设施": "现场是否有条件安装灯光诱杀设备？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "种植模式": "新植蔗",
+          "危害程度": "轻度"
+        },
+        "response_type": "complete_solution",
+        "content": "建议采用生物防治与物理防治结合。在新植蔗播种时，每公顷用 7.5 千克含孢子 1 亿的绿僵菌粉 75 千克撒施于蔗种上，然后盖土。同时，晚上 19～20 时开灯诱杀成虫。",
+        "follow_up_question": null,
+        "fallback_strategy": "若效果不佳，可考虑轮作水稻、玉米或红薯。"
+      },
+      {
+        "condition_checks": {
+          "种植模式": "宿根蔗",
+          "危害程度": "重度"
+        },
+        "response_type": "complete_solution",
+        "content": "建议采取综合防治。①破垄松蔸护理，将幼虫和蛹翻上土面捡杀。②每公顷施 3％米乐尔颗粒剂或 20％益舒宝颗粒剂 45～60 千克，施后盖土。③结合灯光诱杀成虫。",
+        "follow_up_question": null,
+        "fallback_strategy": "若虫害持续严重，建议不留宿根翻犁，并实行轮作。"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键信息（如种植模式、危害程度），无法提供精准方案。建议先进行田间调查，确认是否为蔗根锯天牛危害，并评估虫害严重程度。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

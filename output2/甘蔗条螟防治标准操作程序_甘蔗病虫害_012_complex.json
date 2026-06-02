@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "甘蔗条螟防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "枯心",
+      "死尾",
+      "螟害节",
+      "心叶组织被食害",
+      "叶鞘内有幼虫结茧"
+    ],
+    "triggers": [
+      "3月中旬蛾羽化",
+      "4代发生",
+      "幼虫在叶鞘内侧结茧",
+      "成虫弱趋光性",
+      "雌蛾产卵于蔗叶中脉两旁"
+    ],
+    "reasoning_chain": "如果观察到蔗苗枯心或蔗茎死尾，且发现叶鞘内有幼虫或卵块呈'人'字形排列，结合发生季节（4-9月为主害代），可判定为条螟危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前生育期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "不同生育期条螟危害部位不同，防治策略有异"
+      },
+      {
+        "name": "危害程度",
+        "type": "categorical",
+        "options": [
+          "轻度",
+          "中度",
+          "重度"
+        ],
+        "description": "田间受害植株比例",
+        "why_important": "决定是否需要化学防治及用药浓度"
+      },
+      {
+        "name": "防治历史",
+        "type": "categorical",
+        "options": [
+          "未防治",
+          "已化学防治",
+          "已生物防治"
+        ],
+        "description": "近期是否使用过农药",
+        "why_important": "避免抗药性产生及农药残留超标"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "田间杂草情况",
+        "type": "text",
+        "description": "田间杂草生长状况",
+        "why_important": "杂草可能作为害虫中间寄主"
+      },
+      {
+        "name": "周边作物",
+        "type": "text",
+        "description": "周边种植作物类型",
+        "why_important": "影响害虫迁移和天敌环境"
+      }
+    ],
+    "clarification_templates": {
+      "当前生育期": "请问甘蔗目前处于哪个生长阶段？（苗期/分蘖期/伸长期/成熟期）",
+      "危害程度": "请描述田间枯心苗或死尾的比例大概是多少？",
+      "防治历史": "近期是否对甘蔗进行过病虫害防治？如有，使用了什么药剂？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前生育期": "苗期",
+          "危害程度": "轻度"
+        },
+        "response_type": "complete_solution",
+        "content": "针对苗期轻度危害，建议人工摘除卵块及枯心苗，集中销毁。可释放赤眼蜂进行生物防治，减少化学农药使用。",
+        "follow_up_question": null,
+        "fallback_strategy": "若3天内无改善，升级为中度方案"
+      },
+      {
+        "condition_checks": {
+          "当前生育期": "伸长期",
+          "危害程度": "重度"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "伸长期重度危害需立即干预。建议选用针对鳞翅目幼虫的专用药剂（如氯虫苯甲酰胺等），重点喷淋心叶及叶鞘。",
+        "follow_up_question": "请确认近期是否使用过同类药剂，以避免抗药性？",
+        "fallback_strategy": "若无法确定药剂，建议咨询当地农技站获取推荐清单"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定精准方案。请补充甘蔗当前生育期及田间危害程度信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

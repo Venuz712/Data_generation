@@ -1,0 +1,121 @@
+{
+  "meta": {
+    "title": "甘蔗栽培管理标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "苗期至拔节期",
+    "source": "甘蔗栽培管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "三叉头下叶片数 7-8 片",
+      "三叉头下叶片数 12-16 片",
+      "植株叶色偏黄",
+      "株高低于正常苗 70%",
+      "生长过旺",
+      "主茎明显强于分蘖"
+    ],
+    "triggers": [
+      "三叉头生长点下来有 7-8 张健康叶片",
+      "三叉头生长点下来有 12-16 张健康叶片",
+      "弱苗穴",
+      "机械未能保证成活率",
+      "三叉头生长超过立竹高度",
+      "肥料直接接触根系"
+    ],
+    "reasoning_chain": "如果观察到三叉头下叶片数达到 7-8 片且无多余枯死叶片，则可判定为第一次剥叶时机；如果植株叶色偏黄或株高<正常苗 70%，则判定为弱苗需扶弱施肥；如果机械无法保证成活率，则需转为人工栽苗。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "适宜栽苗气温",
+        "type": "numeric",
+        "options": [],
+        "description": "适合甘蔗栽苗的具体温度范围",
+        "why_important": "原文未给出具体温度阈值，需根据当地气候判断栽苗时机"
+      },
+      {
+        "name": "土壤湿度状况",
+        "type": "categorical",
+        "options": [
+          "干旱",
+          "湿润",
+          "积水"
+        ],
+        "description": "栽苗时的土壤水分情况",
+        "why_important": "影响栽苗成活率及施肥效果，原文仅提及根据降雨决定"
+      },
+      {
+        "name": "根系恢复情况",
+        "type": "categorical",
+        "options": [
+          "新根发生率<70%",
+          "新根发生率>=70%"
+        ],
+        "description": "扶弱施肥 7 天后的根系生长状态",
+        "why_important": "用于验证扶弱施肥是否有效"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "机械可用性",
+        "type": "boolean",
+        "description": "是否具备机械化栽苗条件",
+        "why_important": "决定采用人工还是机械栽苗"
+      },
+      {
+        "name": "肥料品牌",
+        "type": "text",
+        "description": "使用的平衡肥或高氮平衡肥具体品牌",
+        "why_important": "不同品牌肥料浓度可能不同，影响施肥量控制"
+      }
+    ],
+    "clarification_templates": {
+      "适宜栽苗气温": "请问当前当地的气温是多少度？是否稳定在适宜生长的范围内？",
+      "土壤湿度状况": "当前土壤湿度如何？是否有积水或过于干旱的情况？",
+      "根系恢复情况": "扶弱施肥 7 天后，新根发生率是否达到 70% 以上？叶色是否转绿？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "生长阶段": "三叉头下 7-8 片叶",
+          "叶片状态": "健康"
+        },
+        "response_type": "complete_solution",
+        "content": "此时进行第一次剥叶。主要目的是剥除根部叶片和除去不能成茎的无效分蘖。注意可迟不可早，避免抑制光合作用。",
+        "follow_up_question": null,
+        "fallback_strategy": "若叶片数不足，请等待至达标再进行。"
+      },
+      {
+        "condition_checks": {
+          "植株状态": "弱苗",
+          "叶色": "偏黄",
+          "株高": "<正常苗 70%"
+        },
+        "response_type": "complete_solution",
+        "content": "在压苗前进行一次扶弱苗施肥。每穴供给 25-50g 平衡肥或高氮平衡肥，施肥深度 5-8cm，避免裸露。有条件配合等量水肥，并加入生根药剂。",
+        "follow_up_question": null,
+        "fallback_strategy": "若施肥后出现烧苗，需控制施肥量不超过 50g/穴，避免肥料直接接触根系。"
+      },
+      {
+        "condition_checks": {
+          "栽苗方式": "机械",
+          "成活率保障": "无法保证"
+        },
+        "response_type": "alternative_solution",
+        "content": "建议采用人工栽苗。栽苗时间由实际情况灵活决定，根据当时当地的气温和降雨决定，严禁深栽。",
+        "follow_up_question": "请问当前当地的气温和降雨情况如何？",
+        "fallback_strategy": "若必须机械栽苗，需调整机械参数确保浅栽。"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以提供具体操作建议。请补充甘蔗当前的生长阶段（如苗期、拔节期）及具体遇到的问题（如叶片数量、植株长势）。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗操作规程.txt"
+}

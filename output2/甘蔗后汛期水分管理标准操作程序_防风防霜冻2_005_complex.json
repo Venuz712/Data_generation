@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "甘蔗后汛期水分管理标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "中后期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "桂南地区田间积水渍涝",
+      "桂北地区土壤干旱缺水",
+      "灌排设施受损"
+    ],
+    "triggers": [
+      "后汛期降水分布不均",
+      "台风暴雨天气",
+      "区域气候差异（桂南多雨/桂北易旱）"
+    ],
+    "reasoning_chain": "如果位于桂南多雨区且观察到田间积水，则判定为渍涝风险；如果位于桂北易旱区且土壤干燥，则判定为干旱风险。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "种植区域",
+        "type": "categorical",
+        "options": [
+          "桂南",
+          "桂北",
+          "其他"
+        ],
+        "description": "甘蔗种植的具体地理区域",
+        "why_important": "决定采取排涝防渍还是蓄水保墒措施"
+      },
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "过湿",
+          "适宜",
+          "干旱"
+        ],
+        "description": "当前田间土壤水分状况",
+        "why_important": "确定水分管理的具体方向和紧迫性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "灌溉设施状况",
+        "type": "categorical",
+        "description": "现有灌排设施的完好程度",
+        "why_important": "决定是否需要优先修复设施以保障运行"
+      },
+      {
+        "name": "节水设备",
+        "type": "text",
+        "description": "是否具备滴灌或喷灌设备",
+        "why_important": "影响节水技术推广的可行性"
+      }
+    ],
+    "clarification_templates": {
+      "种植区域": "请问您的甘蔗种植地位于桂南多雨区还是桂北易旱区？",
+      "土壤湿度": "当前田间土壤湿度是否过湿或干旱？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "种植区域": "桂南",
+          "土壤湿度": "过湿"
+        },
+        "response_type": "complete_solution",
+        "content": "重点做好排涝防渍，保持排水沟渠畅通，及时排除台风暴雨积水，防止根系腐烂。",
+        "follow_up_question": null,
+        "fallback_strategy": "若自然排水不畅，需紧急调用抽水设备强制排水。"
+      },
+      {
+        "condition_checks": {
+          "种植区域": "桂北",
+          "土壤湿度": "干旱"
+        },
+        "response_type": "complete_solution",
+        "content": "提前做好蓄水保墒准备，合理调配水源，推广滴灌喷灌技术，采用秸秆覆盖减少土壤水分蒸发。",
+        "follow_up_question": null,
+        "fallback_strategy": "若水源不足，需协调周边水库供水或实施人工增雨。"
+      }
+    ],
+    "default_response": {
+      "content": "请补充种植区域及当前土壤湿度信息，以便提供精准的水分管理建议。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻2.txt"
+}

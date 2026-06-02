@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "title": "甘蔗宿根收获管理标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "收获期及宿根萌芽期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗芽萌动不良",
+      "蔗头失去生理机能",
+      "蔗头腐烂",
+      "发株率降低"
+    ],
+    "triggers": [
+      "过早收获",
+      "过迟收获",
+      "低温干旱期长",
+      "雨天收获",
+      "细菌侵染"
+    ],
+    "reasoning_chain": "如果收获时间过早且处于低温干旱期，则可能导致蔗芽萌动不良甚至死亡；如果收获时间过迟，则缩短生长期影响产量；如果在雨天收获，则易导致蔗头受到细菌侵染而腐烂。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前所在地区",
+        "type": "categorical",
+        "options": [
+          "广东中南部",
+          "其他蔗区"
+        ],
+        "description": "种植甘蔗的具体地理区域",
+        "why_important": "不同地区气候适宜收获期不同，广东经验仅适用于特定区域"
+      },
+      {
+        "name": "计划收获日期",
+        "type": "numeric",
+        "description": "具体的收获日期",
+        "why_important": "用于判断是否处于立春、雨水等适宜萌芽期"
+      },
+      {
+        "name": "近期天气状况",
+        "type": "categorical",
+        "options": [
+          "晴天",
+          "雨天",
+          "阴天"
+        ],
+        "description": "收获期间的天气情况",
+        "why_important": "雨天收获易导致蔗头腐烂，需选择晴天"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "宿根蔗品种",
+        "type": "text",
+        "description": "当前种植的甘蔗品种名称",
+        "why_important": "不同品种对低温和干旱的耐受性不同"
+      }
+    ],
+    "clarification_templates": {
+      "当前所在地区": "请问您所在的甘蔗种植区域是哪里？",
+      "计划收获日期": "您计划或已经进行收获的具体日期是什么时候？",
+      "近期天气状况": "未来几天的天气预报显示是晴天还是雨天？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前所在地区": "广东中南部",
+          "计划收获日期": "立春至雨水期间",
+          "近期天气状况": "晴天"
+        },
+        "response_type": "complete_solution",
+        "content": "当前条件适宜留宿根。建议在立春、雨水期间，选择晴天进行收获。此时气温回升，雨水增加，有利于宿根发株。",
+        "follow_up_question": null,
+        "fallback_strategy": "若收获后遇突发低温，需覆盖保温"
+      },
+      {
+        "condition_checks": {
+          "近期天气状况": "雨天"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "雨天不宜收获，以免蔗头受细菌侵染腐烂。建议推迟收获，等待晴天进行。",
+        "follow_up_question": "请问未来三天是否有晴天预报？",
+        "fallback_strategy": "若必须雨天收获，需加强田间排水并喷洒杀菌剂"
+      },
+      {
+        "condition_checks": {
+          "计划收获日期": "过早或过迟"
+        },
+        "response_type": "alternative_solution",
+        "content": "收获时间不当会影响产量。若过早，低温干旱不利萌动；若过迟，生长期缩短。建议根据当地气候调整收获窗口。",
+        "follow_up_question": "您目前处于哪个节气？",
+        "fallback_strategy": "加强水肥管理以弥补生长期不足"
+      }
+    ],
+    "default_response": {
+      "content": "为了提供更准确的宿根管理建议，需要了解更多关于您种植区域和当前天气的信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "采收贮藏.txt"
+}

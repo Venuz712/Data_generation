@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "甘蔗抗旱救灾标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "新植蔗苗期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗苗萎蔫",
+      "生长异常"
+    ],
+    "triggers": [
+      "干旱缺水",
+      "土壤水分不足",
+      "移栽后水分供应不足"
+    ],
+    "reasoning_chain": "如果移栽后观察到蔗苗出现萎蔫现象，且近期降雨少或土壤干燥，则可判定为干旱胁迫。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "湿润",
+          "干燥",
+          "极度干旱"
+        ],
+        "description": "当前蔗田土壤的含水量状态",
+        "why_important": "决定灌溉的紧迫性和方式"
+      },
+      {
+        "name": "灌溉水源",
+        "type": "categorical",
+        "options": [
+          "井水",
+          "水灌车",
+          "滴灌设施",
+          "无水源"
+        ],
+        "description": "可用的灌溉水源类型",
+        "why_important": "影响灌溉措施的选择和执行成本"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "灾害持续时间",
+        "type": "text",
+        "description": "干旱发生的天数",
+        "why_important": "评估甘蔗受损程度"
+      },
+      {
+        "name": "当前施肥情况",
+        "type": "text",
+        "description": "最近一次施肥的时间和种类",
+        "why_important": "避免施肥过量或冲突"
+      }
+    ],
+    "clarification_templates": {
+      "土壤湿度": "请问目前蔗田土壤的干湿程度如何？",
+      "灌溉水源": "请问您目前有哪些可用的灌溉水源？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "干旱程度": "轻度",
+          "水源条件": "充足"
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即采取抽水灌溉，重点保障新植蔗苗水分供应。同时推广地膜覆盖及秸秆、蔗叶还田覆盖技术，减少水分蒸发。可配合喷施叶面肥增强抗旱能力。",
+        "follow_up_question": null,
+        "fallback_strategy": "若灌溉后萎蔫未缓解，需检查根系是否受损。"
+      },
+      {
+        "condition_checks": {
+          "干旱程度": "重度",
+          "水源条件": "有限"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "优先保障关键区域灌溉，采用水灌车运水或滴灌技术。增施有机肥和合理搭配氮磷钾以增强抗旱能力。",
+        "follow_up_question": "请问目前是否有井水或水灌车可用？具体缺水面积是多少？",
+        "fallback_strategy": "若无法灌溉，建议暂时覆盖秸秆保墒，等待降雨。"
+      }
+    ],
+    "default_response": {
+      "content": "检测到甘蔗移栽后出现异常，请确认是否出现萎蔫现象及当地降雨情况，以便提供精准抗旱方案。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱2.txt"
+}

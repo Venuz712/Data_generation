@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "甘蔗宿根收获与管理标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "收获及宿根萌发期",
+    "source": "甘蔗收获质量与宿根管理文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "蔗头破裂",
+      "切口不平整",
+      "留头过高",
+      "发株弱",
+      "过底笋",
+      "宿根发株不整齐"
+    ],
+    "triggers": [
+      "工具不锋利",
+      "砍收速度过慢",
+      "留茬高度超过10厘米",
+      "立春后未斩去秋冬笋",
+      "3月后未保留粗壮春笋"
+    ],
+    "reasoning_chain": "如果观察到蔗头破裂或切口不平整，且留茬高度超过10厘米，则可判定为收割操作不当导致宿根生长不良；若立春后砍收仍保留秋冬笋，则判定为管理时机错误。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "砍收具体日期",
+        "type": "categorical",
+        "options": [
+          "立春前",
+          "立春后",
+          "3月后"
+        ],
+        "description": "决定宿根笋处理策略的关键时间点",
+        "why_important": "不同时间节点对应不同的留笋策略"
+      },
+      {
+        "name": "留茬高度",
+        "type": "numeric",
+        "options": [],
+        "description": "砍收后蔗头保留长度",
+        "why_important": "影响芽萌发位置及植株强弱"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "土壤湿度",
+        "type": "categorical",
+        "options": [
+          "湿润",
+          "干燥"
+        ],
+        "description": "砍收时的土壤干湿程度",
+        "why_important": "影响切口平整度及蔗头破裂风险"
+      }
+    ],
+    "clarification_templates": {
+      "砍收具体日期": "请问您的甘蔗是在立春前、立春后还是3月后砍收的？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "砍收时间": "立春前",
+          "留茬高度": "7-10厘米"
+        },
+        "response_type": "complete_solution",
+        "content": "选用锋利工具快捷砍收，切口平整，蔗头不破裂。实行小锄低砍，留茬7-10厘米。保留秋冬笋以养蔗头，春暖后斩去。",
+        "follow_up_question": null,
+        "fallback_strategy": null
+      },
+      {
+        "condition_checks": {
+          "砍收时间": "立春后",
+          "留茬高度": "7-10厘米"
+        },
+        "response_type": "complete_solution",
+        "content": "选用锋利工具快捷砍收，切口平整，蔗头不破裂。实行小锄低砍，留茬7-10厘米。采用“一扫光”斩掉秋冬笋，做到回头看不见青。",
+        "follow_up_question": null,
+        "fallback_strategy": null
+      },
+      {
+        "condition_checks": {
+          "砍收时间": "3月后",
+          "留茬高度": "7-10厘米"
+        },
+        "response_type": "complete_solution",
+        "content": "选用锋利工具快捷砍收，切口平整，蔗头不破裂。实行小锄低砍，留茬7-10厘米。小心保留粗壮的春笋。",
+        "follow_up_question": null,
+        "fallback_strategy": null
+      }
+    ],
+    "default_response": {
+      "content": "请提供砍收的具体时间（立春前/后或3月后）及留茬高度，以便提供准确的管理建议。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "采收贮藏.txt"
+}

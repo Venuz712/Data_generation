@@ -1,0 +1,133 @@
+{
+  "meta": {
+    "title": "甘蔗台风灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "甘蔗倒伏",
+      "田间积水",
+      "根系浸泡",
+      "植株倾斜"
+    ],
+    "triggers": [
+      "台风预警",
+      "大风天气",
+      "暴雨导致积水",
+      "低洼地形"
+    ],
+    "reasoning_chain": "如果收到台风预警或观察到田间积水/倒伏，且处于台风多发区，则判定为台风灾害风险或已发生灾害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "台风预警级别",
+        "type": "categorical",
+        "options": [
+          "蓝色",
+          "黄色",
+          "橙色",
+          "红色"
+        ],
+        "description": "气象部门发布的台风预警等级",
+        "why_important": "决定防护措施的紧急程度和投入力度"
+      },
+      {
+        "name": "甘蔗生育期",
+        "type": "categorical",
+        "options": [
+          "幼苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "不同生育期抗倒伏能力不同，恢复措施有差异"
+      },
+      {
+        "name": "田间积水深度",
+        "type": "numeric",
+        "options": [],
+        "description": "田间积水的具体深度（厘米）",
+        "why_important": "决定排水设备的选型和排水优先级"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "可用机械设备",
+        "type": "text",
+        "description": "现场可用的抽水机或农机数量",
+        "why_important": "影响排水和扶正作业的效率"
+      },
+      {
+        "name": "劳动力情况",
+        "type": "text",
+        "description": "可投入灾后恢复的人力数量",
+        "why_important": "影响扶正和捆绑工作的进度"
+      }
+    ],
+    "clarification_templates": {
+      "台风预警级别": "当前气象部门发布的台风预警级别是什么？",
+      "甘蔗生育期": "甘蔗目前处于哪个生长阶段？",
+      "田间积水深度": "田间积水大概有多深？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "台风预警级别": [
+            "蓝色",
+            "黄色"
+          ],
+          "甘蔗生育期": [
+            "伸长期",
+            "成熟期"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "台风来临前，重点关注桂东、桂南等区域。有条件的蔗区提前将田块外围甘蔗搭架固定，防止倒伏。立即清理疏通蔗田排水沟渠，确保排水畅通。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无搭架条件，优先保障排水系统畅通。"
+      },
+      {
+        "condition_checks": {
+          "台风预警级别": [
+            "橙色",
+            "红色"
+          ],
+          "甘蔗生育期": [
+            "幼苗期",
+            "分蘖期"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "启动应急预案。低洼易涝蔗田加深排水沟并备足抽排水设备。台风过境后及时扶正倒伏甘蔗并进行捆绑支撑，使蔗株尽快恢复直立生长。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法扶正，需评估是否改种或补种。"
+      },
+      {
+        "condition_checks": {
+          "田间积水深度": ">30cm",
+          "甘蔗生育期": [
+            "全生育期"
+          ]
+        },
+        "response_type": "alternative_solution",
+        "content": "针对低洼易涝蔗田，必须立即使用抽排水设备将积水迅速排出蔗田，防止甘蔗根系长时间浸泡，影响正常生长和糖分积累。",
+        "follow_up_question": "现场是否有可用的抽水设备？",
+        "fallback_strategy": "若无设备，需人工挖掘临时排水沟引导水流。"
+      }
+    ],
+    "default_response": {
+      "content": "请密切关注台风预警信息，及时启动应急预案。结合我区台风多发特点，做好防灾减灾工作。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻2.txt"
+}

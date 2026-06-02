@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "title": "甘蔗新植蔗补苗标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "苗期",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "缺苗",
+      "断垄",
+      "死苗"
+    ],
+    "triggers": [
+      "播种后出苗率低",
+      "苗期病虫害",
+      "自然灾害导致死苗"
+    ],
+    "reasoning_chain": "如果新植蔗田出现缺苗断垄现象，且处于苗期，则可判定需要进行补苗操作。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "缺苗率",
+        "type": "categorical",
+        "options": [
+          "轻微 (<10%)",
+          "中等 (10%-30%)",
+          "严重 (>30%)"
+        ],
+        "description": "田间缺苗的比例",
+        "why_important": "决定是局部补苗还是重新种植"
+      },
+      {
+        "name": "补苗时间",
+        "type": "categorical",
+        "options": [
+          "出苗后 1 周内",
+          "出苗后 1 月内",
+          "已错过最佳时机"
+        ],
+        "description": "发现缺苗并进行补苗的时间节点",
+        "why_important": "影响补苗成活率"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "土壤墒情",
+        "type": "categorical",
+        "description": "土壤水分状况",
+        "why_important": "影响补苗后的成活"
+      }
+    ],
+    "clarification_templates": {
+      "缺苗率": "请问目前田间的缺苗比例大概是多少？",
+      "补苗时间": "请问发现缺苗到现在已经过了多久？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "缺苗率": "轻微 (<10%)",
+          "补苗时间": "出苗后 1 周内"
+        },
+        "response_type": "complete_solution",
+        "content": "建议立即进行补苗。选择与主栽品种一致的健壮种苗，在阴天或傍晚进行移栽，移栽后浇足定根水。",
+        "follow_up_question": null,
+        "fallback_strategy": "若补苗后仍不生长，需检查土壤是否有地下害虫。"
+      },
+      {
+        "condition_checks": {
+          "缺苗率": "严重 (>30%)",
+          "补苗时间": "已错过最佳时机"
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "缺苗严重且错过最佳时机，补苗成活率低。建议评估是否重新种植或保留现状。",
+        "follow_up_question": "请问您是否考虑过重新种植该地块？",
+        "fallback_strategy": "若必须补苗，需加强水肥管理并覆盖保湿。"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定具体方案，请补充缺苗程度及发现时间等信息。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "抗旱2.txt"
+}

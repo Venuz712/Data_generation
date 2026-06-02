@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "title": "甘蔗霜冻灾害应对标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "收榨前",
+    "source": "甘蔗灾害应对文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "叶片枯黄",
+      "茎秆受冻",
+      "宿根蔗芽受损"
+    ],
+    "triggers": [
+      "极端低温天气",
+      "霜冻预警",
+      "收榨前低温"
+    ],
+    "reasoning_chain": "如果监测到极端低温预报且处于收榨前，则判定为霜冻风险；如果观察到甘蔗叶片枯黄或茎秆受损，则判定为已受霜冻为害。",
+    "confidence": "中"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "预测最低温度",
+        "type": "numeric",
+        "description": "未来 24-48 小时预计最低气温",
+        "why_important": "决定是否需要启动灌水等物理防冻措施"
+      },
+      {
+        "name": "灌溉条件",
+        "type": "boolean",
+        "description": "蔗区是否具备灌水设施",
+        "why_important": "灌水是提升地温的关键措施，需确认可行性"
+      },
+      {
+        "name": "甘蔗类型",
+        "type": "categorical",
+        "options": [
+          "新植蔗",
+          "宿根蔗"
+        ],
+        "description": "甘蔗种植类型",
+        "why_important": "宿根蔗需保留蔗叶保护蔗芽，新植蔗策略不同"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "受灾程度",
+        "type": "categorical",
+        "description": "甘蔗受冻受损程度",
+        "why_important": "决定砍运优先级和后续处理方案"
+      }
+    ],
+    "clarification_templates": {
+      "预测最低温度": "请问当地气象预报的最低温度是多少？",
+      "灌溉条件": "您的蔗区是否具备霜冻前灌水的条件？",
+      "甘蔗类型": "当前甘蔗是新植还是宿根？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "预测最低温度": "< 0℃",
+          "灌溉条件": "true",
+          "甘蔗类型": "宿根蔗"
+        },
+        "response_type": "complete_solution",
+        "content": "1. 霜冻前进行蔗田灌水，增加地温；2. 保留蔗叶，保护宿根蔗芽；3. 密切关注天气变化。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无灌水条件，建议覆盖秸秆或培土保温"
+      },
+      {
+        "condition_checks": {
+          "受灾程度": "已受冻"
+        },
+        "response_type": "complete_solution",
+        "content": "1. 优先安排受冻甘蔗的砍运和入榨；2. 尽快处理以减少糖分损失和腐烂风险。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法及时入榨，需进行覆盖保湿处理"
+      }
+    ],
+    "default_response": {
+      "content": "当前信息不足以制定具体防冻方案，请提供当地气温预报及甘蔗种植类型。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "防风防霜冻.txt"
+}

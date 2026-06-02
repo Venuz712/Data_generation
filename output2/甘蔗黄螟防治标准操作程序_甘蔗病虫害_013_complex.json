@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "甘蔗黄螟防治标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "甘蔗虫害防治文本",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "苗期枯心",
+      "蔗茎受害",
+      "成虫体长5～9毫米，紫灰色，前翅有斜三角形紫褐色纹",
+      "幼虫淡土黄色，头部黄褐色，两颊有楔形黑纹"
+    ],
+    "triggers": [
+      "3月上旬产卵，4月中下旬盛孵（第一代）",
+      "4月下旬产卵，5月下旬盛孵（第二代）",
+      "苗期受害主要是第一、二代",
+      "第三代以后转移到蔗茎为害",
+      "广西南宁1年发生7个重叠世代"
+    ],
+    "reasoning_chain": "如果在3-5月苗期观察到枯心苗，且幼虫形态符合淡土黄色、两颊楔形黑纹特征，结合无越冬现象，可判定为黄螟第一代或第二代危害。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "当前甘蔗生育期",
+        "type": "categorical",
+        "options": [
+          "苗期",
+          "分蘖期",
+          "伸长期",
+          "成熟期"
+        ],
+        "description": "甘蔗当前的生长阶段",
+        "why_important": "不同生育期受害表现及防治重点不同，苗期主要防枯心，后期防蛀茎"
+      },
+      {
+        "name": "种植区域",
+        "type": "categorical",
+        "options": [
+          "广西南宁",
+          "其他热带/亚热带地区"
+        ],
+        "description": "甘蔗种植的具体地理位置",
+        "why_important": "发生世代数和发生时间随纬度气候变化，南宁数据仅作为参考"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "历史用药情况",
+        "type": "text",
+        "description": "近期是否使用过农药及种类",
+        "why_important": "避免抗药性及农药混用禁忌"
+      }
+    ],
+    "clarification_templates": {
+      "当前甘蔗生育期": "请问目前甘蔗处于哪个生长阶段（如苗期、伸长期等）？",
+      "种植区域": "请问甘蔗种植的具体地点是哪里？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "当前甘蔗生育期": "苗期",
+          "种植区域": "广西南宁"
+        },
+        "response_type": "complete_solution",
+        "content": "针对第一代或第二代黄螟危害苗期枯心：1. 农业防治：清洁田园，斩除秋笋，浸种，选择抗虫种苗。2. 人工防治：注药杀螟，可用敌敌畏或敌百虫100倍稀释液注射。",
+        "follow_up_question": null,
+        "fallback_strategy": "若无法注射，可尝试浸水淹虫"
+      },
+      {
+        "condition_checks": {
+          "当前甘蔗生育期": "伸长期",
+          "种植区域": "广西南宁"
+        },
+        "response_type": "complete_solution",
+        "content": "针对第三代以后转移到蔗茎为害：1. 农业防治：低砍收蔗，消灭茎基内部越冬幼虫，合理种植和轮植。2. 人工防治：注药杀螟，可用敌敌畏或敌百虫100倍稀释液注射。",
+        "follow_up_question": null,
+        "fallback_strategy": "加强田间监测，及时剥叶除虫"
+      }
+    ],
+    "default_response": {
+      "content": "由于缺少关键信息（如生育期、具体地点），无法提供精准方案。建议先确认甘蔗当前生长阶段及种植区域，以便匹配黄螟发生规律。",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}

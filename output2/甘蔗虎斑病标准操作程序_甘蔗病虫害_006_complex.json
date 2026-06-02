@@ -1,0 +1,118 @@
+{
+  "meta": {
+    "title": "甘蔗虎斑病标准操作程序",
+    "crop": "甘蔗",
+    "variety_suitability": [],
+    "growth_stage": "全生育期",
+    "source": "未提及",
+    "version": "1.0"
+  },
+  "diagnosis_criteria": {
+    "symptoms": [
+      "叶鞘污绿色带状/云状斑纹",
+      "淡褐色/褐红色地图状病斑",
+      "边缘红色环状斑纹",
+      "叶鞘外侧深褐色圈状云纹",
+      "叶鞘内侧红色/赭红色病斑",
+      "白色菌丝充满叶鞘间隙",
+      "蔗茎深褐色坏死斑",
+      "粒状黑褐色菌核"
+    ],
+    "triggers": [
+      "多雨季节",
+      "蔗田积水",
+      "杂草丛生",
+      "种植密度过大",
+      "通风透光差",
+      "偏施氮肥",
+      "叶鞘包茎紧密品种"
+    ],
+    "reasoning_chain": "若观察到叶鞘虎斑状病斑且伴随多雨积水环境，结合白色菌丝和菌核特征，可判定为虎斑病。",
+    "confidence": "高"
+  },
+  "missing_info_strategy": {
+    "key_entities": [
+      {
+        "name": "病情发展阶段",
+        "type": "categorical",
+        "options": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "description": "病害侵染程度分级",
+        "why_important": "决定防治措施强度"
+      },
+      {
+        "name": "环境湿度",
+        "type": "numeric",
+        "options": [],
+        "description": "田间相对湿度百分比",
+        "why_important": "影响病原传播速度"
+      },
+      {
+        "name": "用药历史",
+        "type": "boolean",
+        "options": [],
+        "description": "是否已使用杀菌剂",
+        "why_important": "避免重复用药产生抗药性"
+      }
+    ],
+    "optional_entities": [
+      {
+        "name": "种植密度",
+        "type": "text",
+        "description": "每亩株数",
+        "why_important": "影响通风透光条件"
+      },
+      {
+        "name": "施肥记录",
+        "type": "text",
+        "description": "近期肥料类型及用量",
+        "why_important": "判断氮肥偏施情况"
+      }
+    ],
+    "clarification_templates": {
+      "病情发展阶段": "当前病斑覆盖叶鞘面积比例是多少？",
+      "环境湿度": "近三日田间相对湿度是否持续超过80%？",
+      "用药历史": "过去7天内是否使用过杀菌剂？"
+    }
+  },
+  "response_matrix": {
+    "scenarios": [
+      {
+        "condition_checks": {
+          "病情发展阶段": [
+            "初期"
+          ],
+          "环境湿度": [
+            "<70%"
+          ]
+        },
+        "response_type": "complete_solution",
+        "content": "立即清除杂草枯叶，增施磷钾肥，使用18.7%灭黑灵450克/公顷喷雾叶鞘，7天后复查",
+        "follow_up_question": null,
+        "fallback_strategy": "若3日内降雨，提前进行药剂预防"
+      },
+      {
+        "condition_checks": {
+          "病情发展阶段": [
+            "后期"
+          ],
+          "环境湿度": [
+            ">85%"
+          ]
+        },
+        "response_type": "partial_solution_with_clarification",
+        "content": "紧急排涝并施用菌核净3000克/公顷，需确认是否已使用过三唑酮类药剂",
+        "follow_up_question": "是否已使用过三唑酮类药剂？当前蔗茎是否有菌核形成？",
+        "fallback_strategy": "若确认无用药史，改用氟纹胺1500克/公顷"
+      }
+    ],
+    "default_response": {
+      "content": "请提供病情发展阶段、环境湿度及用药历史以制定精准方案",
+      "response_type": "clarification_only"
+    }
+  },
+  "source": "甘蔗病虫害.txt"
+}
