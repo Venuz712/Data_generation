@@ -20,6 +20,7 @@ MOCK_MODE = False
 MAX_TURNS = 10                     # 最大对话轮数
 SLEEP_BETWEEN_CALLS = 0.5
 MAX_RETRIES = 3
+FINAL_TAG = "[FINAL_ANSWER]"
 
 FARMER_ROLE_CARDS = [
     {
@@ -278,26 +279,63 @@ def profile_prompt_block(profile: dict, audience: str) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-def generate_initial_question(sop: dict) -> str:
+def generate_initial_question(sop: dict, profile: dict) -> str:
     crop = sop["meta"]["crop"]
     title = sop["meta"]["title"]
-    symptoms = sop["diagnosis_criteria"]["symptoms"][0] if sop["diagnosis_criteria"].get("symptoms") else "出现异常"
-    system_prompt = "你是一位种植甘蔗的农民，提问要口语化、自然，并且故意缺少一些关键信息。"
-    user_prompt = f"""背景：作物{crop}，问题{title}，典型症状{symptoms}。请生成一个口语化问题，不要一次性给出所有细节。只输出问题。"""
-    messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
-    return call_llm(messages, temperature=0.7, max_tokens=300)
+    symptoms = sop["diagnosis_criteria"].get("symptoms", [])[:3] or ["出现异常"]
+    system_prompt = """你要扮演角色卡中的甘蔗种植户，向农技专家发起一次真实咨询。
+要求：
+1. 只输出农户第一句话或一小段话。
+2. 像真实咨询：有观察、有担心、有不确定，不要一次性把信息说全。
+3. 不要使用“老乡”“老哥”等固定称呼，也不要每次都用“专家您好我想咨询一下”。
+4. 不要列字段，不要像问卷答案，不要复述SOP。
+5. 角色只影响表达方式、关注点和信息披露习惯，不能创造SOP之外的农业事实。
+"""
+    user_prompt = f"""【角色与情境】
+{profile_prompt_block(profile, "farmer")}
 
-def simulate_farmer_response(prev_question: str, expert_reply: str, sop: dict) -> str:
-    system_prompt = "你是一位农民，正在和专家对话。请针对专家的提问，简短、口语化地回答，只提供专家问到的信息。"
-    user_prompt = f"""专家刚才说：{expert_reply}\n农民上一轮问：{prev_question}\n请你作为农民回答专家的提问："""
-    messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
-    return call_llm(messages, temperature=0.7, max_tokens=300)
+【作物与问题】
+作物：{crop}
+问题：{title}
+可观察症状种子：{json.dumps(symptoms, ensure_ascii=False)}
 
-def expert_reply(sop: dict, history: list, current_user_msg: str) -> str:
-    """如果关键信息未齐，只追问；齐了则输出 [FINAL_ANSWER] + 完整方案"""
-    # 提取必须收集的关键信息字段
+    请按角色生成一个自然、不完整但具体的初始咨询问题。只输出农户发言。"""
+    messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
+    return call_llm(messages, temperature=0.7, max_tokens=500)
+
+def simulate_farmer_response(prev_question: str, expert_reply: str, sop: dict, profile: dict, history: list) -> str:
+    history_text = "\n".join(
+        [f"农户：{turn.get('user', '')}\n专家：{turn.get('assistant', '')}" for turn in history if turn.get("assistant")]
+    )
+    system_prompt = """你继续扮演同一个甘蔗种植户。
+要求：
+1. 只回答专家刚问到的内容，可以自然补充一两个相关细节。
+2. 不要为了让数据完整而主动补齐所有信息。
+3. 如果角色不知道某个细节，可以说没注意、记不清、要回头看；不要猜。
+4. 不要说“根据SOP”“按标准流程”等专家视角语言。
+5. 不要使用“老乡”“老哥”等固定称呼。
+"""
+    user_prompt = f"""【角色与情境】
+{profile_prompt_block(profile, "farmer")}
+
+【已有对话】
+{history_text}
+
+【专家刚才说】
+{expert_reply}
+
+【农户上一轮发言】
+{prev_question}
+
+    请继续按同一角色自然回答专家刚问到的问题。只输出农户发言。"""
+    messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
+    return call_llm(messages, temperature=0.7, max_tokens=500)
+
+def expert_reply(sop: dict, history: list, current_user_msg: str, profile: dict) -> str:
+    """Generate the expert side of a natural diagnostic consultation."""
+    # 这些信息点只作为诊断参考，不作为逐项填槽清单。
     key_entities = sop.get("missing_info_strategy", {}).get("key_entities", [])
-    key_names = [e["name"] for e in key_entities]
+    key_names = [e.get("name", "") for e in key_entities if e.get("name")]
 
     # 构建完整的对话历史（包括之前的专家回复和农民回复）
     full_history = []
@@ -309,15 +347,22 @@ def expert_reply(sop: dict, history: list, current_user_msg: str) -> str:
     full_history.append(f"农民：{current_user_msg}")
     history_text = "\n".join(full_history)
 
-    system_prompt = """你是一位严谨的农业专家。你必须严格遵循以下工作流程：
-1. 你的目标是根据SOP收集所有【必须知道的关键信息】。在收集齐之前，**绝对不能给出任何操作建议**（如用药、施肥等）。
-2. 先分析对话历史，提取农民已经提供的所有信息（例如：症状部位、发生时间、天气、作物品种等）。
-3. 每次只追问1-2个当前最缺失的信息，追问要口语化、具体。
-4. 当你已经收集到所有关键信息后，你的回复必须以 `[FINAL_ANSWER]` 开头，然后给出完整、可执行的方案，该方案中不能有问句。
-5. 不要使用问句之外的语句来提前给出方案。
+    system_prompt = f"""你扮演角色卡中的甘蔗农技专家，正在和真实农户多轮咨询。
+要求：
+1. SOP是事实参考和安全边界，不是模板答案，也不是逐项追问清单。
+2. 先回应农户的具体担心，再判断当前信息是否足以给出建议。
+3. 如果信息不足，只追问1-2个最影响判断或处理建议的问题，并简短说明为什么问。
+4. 不要机械追问字段，不要连续列问卷，不要重复农户已经回答过的问题。
+5. 建议必须落在SOP支持范围内；SOP不支持的具体药剂、剂量、时期、品种不要生成。
+6. 不要使用“老乡”“老哥”“为了给您出最准的方子”等固定套话。
+7. 当信息已经足够时，回复必须以 `{FINAL_TAG}` 开头，给出自然、可执行的最终方案；最终方案中不要再追问。
 """
 
-    user_prompt = f"""【SOP中必须收集的关键信息列表】{key_names}
+    user_prompt = f"""【角色与情境】
+{profile_prompt_block(profile, "expert")}
+
+【SOP中可能影响判断的信息点（仅供参考，不要求逐项问完）】
+{json.dumps(key_names, ensure_ascii=False)}
 
 【完整的对话历史】
 {history_text}
@@ -326,55 +371,59 @@ def expert_reply(sop: dict, history: list, current_user_msg: str) -> str:
 {json.dumps(sop, ensure_ascii=False, indent=2)}
 
 请根据当前信息状态，决定回复：
-- 如果还缺信息，只输出追问（不要给方案）。
-- 如果所有关键信息已齐，输出以 [FINAL_ANSWER] 开头的完整方案。
+- 如果还缺影响判断的关键信息，像真实专家一样自然追问1-2个问题。
+- 如果信息已经足够，输出以 {FINAL_TAG} 开头的完整方案。
 只输出回复内容。"""
 
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
     ]
-    return call_llm(messages, temperature=0.3, max_tokens=600)
+    return call_llm(messages, temperature=0.3, max_tokens=1400)
 
-def generate_one_dialogue(sop: dict, sop_id: str) -> dict:
+def generate_one_dialogue(sop: dict, sop_id: str, sample_idx: int = 0, attempt: int = 0) -> dict:
+    profile = build_profile(sop, sop_id, sample_idx=sample_idx, attempt=attempt)
     history = []
-    first_q = generate_initial_question(sop)
+    first_q = generate_initial_question(sop, profile)
     if not first_q:
-        first_q = "老师，我种的甘蔗有点问题，您帮我看看。"
+        raise RuntimeError("农户初始问题生成为空")
     history.append({"user": first_q, "assistant": ""})
 
     for turn_idx in range(1, MAX_TURNS + 1):
-        expert_msg = expert_reply(sop, history[:-1], history[-1]["user"])
+        expert_msg = expert_reply(sop, history[:-1], history[-1]["user"], profile)
         if not expert_msg:
-            expert_msg = "抱歉，我无法确定。请再描述一下症状。"
+            raise RuntimeError(f"第{turn_idx}轮专家回复为空")
         history[-1]["assistant"] = expert_msg
         time.sleep(SLEEP_BETWEEN_CALLS)
 
         # 检查是否结束：专家回复中包含 [FINAL_ANSWER] 即视为给出最终方案
-        if "[FINAL_ANSWER]" in expert_msg:
+        if FINAL_TAG in expert_msg:
             print(f"    第{turn_idx}轮专家给出最终方案，对话结束。")
             break
 
-        # 如果专家没有追问（没有问句），可能是模型出错，强制结束
+        # 如果专家没有追问（没有问句），候选样本不完整，交给上层失败处理
         if "?" not in expert_msg and "？" not in expert_msg:
-            print(f"    第{turn_idx}轮专家未追问，视为对话结束。")
-            break
+            raise RuntimeError(f"第{turn_idx}轮专家未追问且未给出最终方案")
 
         # 农民回答追问
-        farmer_answer = simulate_farmer_response(history[-1]["user"], expert_msg, sop)
+        farmer_answer = simulate_farmer_response(history[-1]["user"], expert_msg, sop, profile, history)
         if not farmer_answer:
-            farmer_answer = "好的，我再看看。"
+            raise RuntimeError(f"第{turn_idx}轮农户回复为空")
         history.append({"user": farmer_answer, "assistant": ""})
         time.sleep(SLEEP_BETWEEN_CALLS)
 
-    # 如果最后一轮没有收到最终方案（即最终对话没有 [FINAL_ANSWER]），补一个默认结束语
-    if "[FINAL_ANSWER]" not in history[-1]["assistant"]:
-        history[-1]["assistant"] += "\n[感谢咨询，请参考以上建议。]"
-    return {"sop_id": sop_id, "dialog": history}
+    if FINAL_TAG not in history[-1]["assistant"]:
+        raise RuntimeError(f"达到最大轮数 {MAX_TURNS} 后仍未给出最终方案")
+    return {
+        "schema_version": "dialogue_v1",
+        "sop_id": sop_id,
+        "profile": profile,
+        "dialog": history,
+    }
 
 def main():
     input_dir = "output2"
-    output_dir = "dialogues2"
+    output_dir = "dialogues_role"
     os.makedirs(output_dir, exist_ok=True)
     json_files = [f for f in os.listdir(input_dir) if f.endswith("_complex.json")]
     if not json_files:
@@ -411,7 +460,7 @@ def main():
         for i in range(num_dialogues):
             print(f"  生成第 {i+1} 条对话...")
             try:
-                dialogue = generate_one_dialogue(sop, sop_id)
+                dialogue = generate_one_dialogue(sop, sop_id, sample_idx=i)
                 out_file = os.path.join(output_dir, f"{sop_id.replace('/', '_')}_dialogue.jsonl")
                 with open(out_file, "a", encoding="utf-8") as f:
                     f.write(json.dumps(dialogue, ensure_ascii=False) + "\n")
