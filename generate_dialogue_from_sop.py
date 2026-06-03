@@ -4,19 +4,62 @@
 import os
 import json
 import time
-from openai import OpenAI
+from urllib import request, error
+
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
 
 # ====================== 配置 ======================
-API_BASE_URL = "https://api.moark.com/v1"
-API_KEY = "6QPX1SXYHFN9FWRRZHGLWFXIFICNMKVHANTLWP58"
-MODEL_NAME = "Qwen3.5-122B-A10B"
+API_BASE_URL = os.getenv("AI_CENTOS_BASE_URL", "https://ai.centos.hk/v1")
+API_KEY = os.getenv("AI_CENTOS_API_KEY", "")
+MODEL_NAME = os.getenv("AI_CENTOS_MODEL", "deepseek-v4-pro")
 MOCK_MODE = False
 MAX_TURNS = 10                     # 最大对话轮数
 SLEEP_BETWEEN_CALLS = 0.5
 MAX_RETRIES = 3
 
-if not MOCK_MODE:
+if not MOCK_MODE and not API_KEY:
+    raise RuntimeError("请先设置环境变量 AI_CENTOS_API_KEY")
+
+if not MOCK_MODE and OpenAI is not None:
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY, default_headers={"X-Failover-Enabled": "true"})
+else:
+    client = None
+
+
+def create_chat_completion(messages, temperature=0.5, max_tokens=800):
+    if client is not None:
+        return client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+    payload = json.dumps({
+        "model": MODEL_NAME,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }).encode("utf-8")
+    req = request.Request(
+        f"{API_BASE_URL.rstrip('/')}/chat/completions",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json",
+            "User-Agent": "sop-dialogue-generator/role-test",
+        },
+        method="POST",
+    )
+    try:
+        with request.urlopen(req, timeout=120) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
 
 # ====================== 安全的 API 调用函数 ======================
 def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES):
@@ -27,46 +70,27 @@ def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES):
 
     for attempt in range(retries):
         try:
-            response = client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                # 尝试关闭思维链（如果 API 支持）
-                extra_body={"enable_thinking": False}
-            )
-            message = response.choices[0].message
-            content = message.content
+            response = create_chat_completion(messages, temperature=temperature, max_tokens=max_tokens)
+            if isinstance(response, dict):
+                message = response.get("choices", [{}])[0].get("message", {})
+                content = message.get("content")
+                reasoning = message.get("reasoning") or message.get("reasoning_content")
+                finish_reason = response.get("choices", [{}])[0].get("finish_reason")
+            else:
+                message = response.choices[0].message
+                content = message.content
+                reasoning = getattr(message, "reasoning", None) or getattr(message, "reasoning_content", None)
+                finish_reason = response.choices[0].finish_reason
 
             # 如果正常返回 content
-            if content is not None:
+            if isinstance(content, str) and content.strip():
                 return content.strip()
 
-            # 否则尝试从 reasoning 中提取最终答案（Qwen 推理模型特有）
-            if hasattr(message, 'reasoning') and message.reasoning:
-                reasoning = message.reasoning
-                print(f"  [INFO] content 为空，尝试从 reasoning 提取 (长度 {len(reasoning)})")
-                # 简单启发式：取 reasoning 中最后一行非思考引导的内容
-                lines = reasoning.strip().split('\n')
-                # 过滤掉明显的思考过程行
-                candidates = []
-                for line in lines:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    # 排除以常见思考关键词开头的行
-                    if line.startswith(('Thinking', '分析', '1.', '2.', '3.', 'Step', '**')):
-                        continue
-                    candidates.append(line)
-                if candidates:
-                    # 返回最后一个有效行
-                    return candidates[-1]
-                else:
-                    # 保底：返回整个 reasoning 的最后200字符
-                    return reasoning[-200:]
+            if reasoning:
+                print(f"  [INFO] content 为空，忽略 reasoning 内容并重试 (长度 {len(reasoning)})")
 
             # 既无 content 也无 reasoning
-            print(f"  API 返回空 content 且无 reasoning (attempt {attempt+1})")
+            print(f"  API 返回空 content 且无 reasoning (finish_reason={finish_reason}, attempt {attempt+1})")
             if attempt < retries - 1:
                 time.sleep(2)
             continue
