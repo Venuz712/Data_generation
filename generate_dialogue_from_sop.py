@@ -4,6 +4,7 @@
 import os
 import json
 import time
+import random
 from urllib import request, error
 
 try:
@@ -19,6 +20,120 @@ MOCK_MODE = False
 MAX_TURNS = 10                     # 最大对话轮数
 SLEEP_BETWEEN_CALLS = 0.5
 MAX_RETRIES = 3
+
+FARMER_ROLE_CARDS = [
+    {
+        "role_id": "F01_new_returning_grower",
+        "archetype": "新手返乡承包户",
+        "experience_level": "novice",
+        "production_context": "刚接手家里或亲戚的甘蔗地，种植经验少",
+        "primary_goal": "先判断问题严重不严重，避免耽误农时",
+        "decision_pressure": "担心自己判断错，描述会比较零散",
+        "communication_style": "口语、直接、会承认不懂专业名词",
+        "opening_bias": "先讲看到的异常和自己的担心",
+        "detail_behavior": "不会一次性说完整背景，被问到才补充",
+        "avoid": ["老乡", "老哥", "固定寒暄", "专家式诊断"],
+    },
+    {
+        "role_id": "F02_practical_smallholder",
+        "archetype": "经验型小农",
+        "experience_level": "practical",
+        "production_context": "多年种甘蔗，靠经验管理小块地",
+        "primary_goal": "确认自己的经验判断是否靠谱",
+        "decision_pressure": "想尽快处理，但不喜欢复杂方案",
+        "communication_style": "凭经验说话，能说苗期、宿根、培土等常见词",
+        "opening_bias": "先说自己以往见过的类似情况",
+        "detail_behavior": "会跳过自己觉得是常识的背景，需要专家追问才说",
+        "avoid": ["老乡", "老哥", "夸张方言", "逐项报表"],
+    },
+    {
+        "role_id": "F03_coop_manager",
+        "archetype": "合作社负责人",
+        "experience_level": "advanced",
+        "production_context": "负责多户或连片甘蔗地的统一管理",
+        "primary_goal": "拿到能批量执行的处理建议",
+        "decision_pressure": "关心成本、人员安排和统一作业窗口",
+        "communication_style": "简洁、偏管理口吻，会提面积和执行效率",
+        "opening_bias": "先讲影响范围、处理成本或是否需要统防统治",
+        "detail_behavior": "信息相对完整，但不会主动说所有细节",
+        "avoid": ["老乡", "老哥", "过度乡土化", "营销口吻"],
+    },
+    {
+        "role_id": "F04_cost_sensitive_grower",
+        "archetype": "成本敏感散户",
+        "experience_level": "practical",
+        "production_context": "种植面积不大，投入预算紧",
+        "primary_goal": "找到便宜、够用、风险不大的办法",
+        "decision_pressure": "担心药肥成本和人工成本过高",
+        "communication_style": "先问有没有省钱办法，对复杂方案会追问必要性",
+        "opening_bias": "先讲问题和成本顾虑",
+        "detail_behavior": "资源限制常在专家建议后才补充",
+        "avoid": ["老乡", "老哥", "固定寒暄", "自动接受所有建议"],
+    },
+    {
+        "role_id": "F05_disaster_recovery_grower",
+        "archetype": "灾后恢复户",
+        "experience_level": "mixed",
+        "production_context": "刚经历干旱、涝害、台风或霜冻影响",
+        "primary_goal": "抢时间补救，减少损失",
+        "decision_pressure": "天气窗口紧，语气更急",
+        "communication_style": "急切但不专业，会描述现场混乱情况",
+        "opening_bias": "先讲灾害经过和最明显损失",
+        "detail_behavior": "会遗漏用药史、品种等不在眼前的信息",
+        "avoid": ["老乡", "老哥", "夸张戏剧化", "编造精确数据"],
+    },
+    {
+        "role_id": "F06_proxy_field_keeper",
+        "archetype": "代管田块人员",
+        "experience_level": "low_to_mixed",
+        "production_context": "替亲戚、老板或合作社看田，掌握二手信息",
+        "primary_goal": "把现场看到的问题问清楚，再回去处理",
+        "decision_pressure": "很多历史信息不确定",
+        "communication_style": "经常说大概、听说、没亲眼看完整",
+        "opening_bias": "先讲自己刚看到的异常",
+        "detail_behavior": "被问到历史管理时可能回答不确定",
+        "avoid": ["老乡", "老哥", "专家式术语", "假装全知道"],
+    },
+]
+
+EXPERT_ROLE_CARDS = [
+    {
+        "role_id": "E01_extension_officer",
+        "archetype": "基层农技推广员",
+        "expertise": "综合农技指导",
+        "communication_style": "务实、通俗、少套话",
+        "question_style": "只问会影响判断和处理建议的上下文",
+        "recommendation_style": "先讲轻重缓急，再给可执行步骤",
+        "avoid": ["老乡", "老哥", "为了给您出最准的方子", "问卷式连问"],
+    },
+    {
+        "role_id": "E02_plant_protection_specialist",
+        "archetype": "植保专家",
+        "expertise": "病虫害识别与安全防治",
+        "communication_style": "专业但不绕，重视诊断边界",
+        "question_style": "围绕症状部位、发生程度、虫体/病斑特征自然追问",
+        "recommendation_style": "强调药剂和操作必须有依据，不确定就建议拍照或现场确认",
+        "avoid": ["老乡", "老哥", "保证治愈", "SOP外药剂剂量"],
+    },
+    {
+        "role_id": "E03_cultivation_manager",
+        "archetype": "栽培管理专家",
+        "expertise": "水肥、培土、苗情和田间管理",
+        "communication_style": "条理清楚，偏作业安排",
+        "question_style": "围绕生育期、田间条件和最近操作追问",
+        "recommendation_style": "把建议转成当天和后续几天能做的管理动作",
+        "avoid": ["老乡", "老哥", "机械填槽", "泛泛而谈"],
+    },
+    {
+        "role_id": "E04_disaster_response_advisor",
+        "archetype": "灾害应急指导员",
+        "expertise": "干旱、涝害、台风、霜冻应对",
+        "communication_style": "冷静、直接、重视时间窗口",
+        "question_style": "先区分灾害程度、恢复可能性和马上能做的事",
+        "recommendation_style": "优先给安全、保守、可立即执行的补救建议",
+        "avoid": ["老乡", "老哥", "拖延判断", "不说明风险"],
+    },
+]
 
 if not MOCK_MODE and not API_KEY:
     raise RuntimeError("请先设置环境变量 AI_CENTOS_API_KEY")
@@ -103,6 +218,64 @@ def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES):
                 print("  达到最大重试次数，返回空字符串")
                 return ""
     return ""
+
+
+def build_profile(sop: dict, sop_id: str, sample_idx: int = 0, attempt: int = 0) -> dict:
+    """Build a lightweight role-driven profile for one synthetic dialogue."""
+    farmer_role = random.choice(FARMER_ROLE_CARDS)
+    title = sop.get("meta", {}).get("title", sop_id)
+    source = sop.get("meta", {}).get("source", sop.get("source", "未知来源"))
+
+    if any(word in title for word in ["灾", "旱", "涝", "台风", "霜冻", "倒伏"]):
+        expert_pool = [r for r in EXPERT_ROLE_CARDS if r["role_id"] == "E04_disaster_response_advisor"]
+    elif any(word in title for word in ["病", "虫", "螟", "蚜", "蝉", "蛾", "龟", "虱"]):
+        expert_pool = [r for r in EXPERT_ROLE_CARDS if r["role_id"] == "E02_plant_protection_specialist"]
+    elif any(word in title for word in ["培土", "追肥", "定植", "补苗", "栽培", "水", "养分"]):
+        expert_pool = [r for r in EXPERT_ROLE_CARDS if r["role_id"] == "E03_cultivation_manager"]
+    else:
+        expert_pool = EXPERT_ROLE_CARDS
+
+    expert_role = random.choice(expert_pool or EXPERT_ROLE_CARDS)
+    diagnosis = sop.get("diagnosis_criteria", {})
+
+    return {
+        "profile_id": f"{farmer_role['role_id']}__{expert_role['role_id']}",
+        "sample_idx": sample_idx,
+        "attempt": attempt,
+        "farmer_role": farmer_role,
+        "expert_role": expert_role,
+        "situation": {
+            "crop": sop.get("meta", {}).get("crop", "甘蔗"),
+            "problem_title": title,
+            "growth_stage": sop.get("meta", {}).get("growth_stage", "未提及"),
+            "source": source,
+            "symptom_seeds": diagnosis.get("symptoms", [])[:4],
+            "trigger_seeds": diagnosis.get("triggers", [])[:3],
+            "generation_note": "情境只用于保持对话一致，不是逐项追问清单。",
+        },
+    }
+
+
+def profile_prompt_block(profile: dict, audience: str) -> str:
+    """Render role profile as compact prompt text."""
+    farmer_role = profile.get("farmer_role", {})
+    expert_role = profile.get("expert_role", {})
+    situation = profile.get("situation", {})
+
+    if audience == "farmer":
+        payload = {
+            "farmer_role": farmer_role,
+            "situation": situation,
+            "role_boundary": "角色只影响语气、关注点和信息披露习惯；不要创造事实，不要复述SOP。",
+        }
+    else:
+        payload = {
+            "farmer_role": farmer_role,
+            "expert_role": expert_role,
+            "situation": situation,
+            "role_boundary": "角色只影响问法和表达；SOP是事实参考，不是模板答案或逐项追问清单。",
+        }
+    return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
 def generate_initial_question(sop: dict) -> str:
