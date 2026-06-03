@@ -221,22 +221,103 @@ def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES):
     return ""
 
 
+def extract_json_object(text: str) -> dict:
+    """Extract a single JSON object from an LLM response."""
+    text = (text or "").strip()
+    if not text:
+        raise ValueError("空响应")
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.startswith("json"):
+            text = text[4:].strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        start = text.find("{")
+        end = text.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            raise
+        return json.loads(text[start:end + 1])
+
+
+def route_expert_role(sop: dict, sop_id: str) -> dict:
+    """Route one SOP to exactly one expert role using the chat API."""
+    valid_roles = {role["role_id"]: role for role in EXPERT_ROLE_CARDS}
+    diagnosis = sop.get("diagnosis_criteria", {})
+    response_matrix = sop.get("response_matrix", {})
+    route_payload = {
+        "sop_id": sop_id,
+        "title": sop.get("meta", {}).get("title", sop_id),
+        "crop": sop.get("meta", {}).get("crop", "甘蔗"),
+        "growth_stage": sop.get("meta", {}).get("growth_stage", ""),
+        "symptoms": diagnosis.get("symptoms", [])[:8],
+        "triggers": diagnosis.get("triggers", [])[:6],
+        "reasoning_chain": diagnosis.get("reasoning_chain", ""),
+        "key_entities": [
+            entity.get("name", "")
+            for entity in sop.get("missing_info_strategy", {}).get("key_entities", [])
+            if entity.get("name")
+        ],
+        "scenario_summaries": [
+            {
+                "condition_checks": scenario.get("condition_checks", {}),
+                "response_type": scenario.get("response_type", ""),
+                "content": str(scenario.get("content", ""))[:500],
+            }
+            for scenario in response_matrix.get("scenarios", [])[:3]
+        ],
+    }
+    role_payload = [
+        {
+            "role_id": role["role_id"],
+            "archetype": role["archetype"],
+            "expertise": role["expertise"],
+        }
+        for role in EXPERT_ROLE_CARDS
+    ]
+    system_prompt = """你是农业咨询数据生成流水线中的专家角色路由器。
+你只能根据 SOP 内容选择一个最匹配的专家角色。
+必须只输出一个 JSON 对象，不要输出解释、Markdown 或多余文本。
+不要改写 SOP，不要生成咨询内容，不要使用规则说明。
+"""
+    user_prompt = f"""【可选专家角色】
+{json.dumps(role_payload, ensure_ascii=False, indent=2)}
+
+【待路由 SOP 摘要】
+{json.dumps(route_payload, ensure_ascii=False, indent=2)}
+
+输出格式必须严格为：
+{{
+  "expert_role_id": "E01_extension_officer 或 E02_plant_protection_specialist 或 E03_cultivation_manager 或 E04_disaster_response_advisor",
+  "reason": "一句话说明选择依据"
+}}
+"""
+    response = call_llm(
+        [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+        temperature=0,
+        max_tokens=500,
+    )
+    routed = extract_json_object(response)
+    role_id = routed.get("expert_role_id")
+    if role_id not in valid_roles:
+        raise RuntimeError(f"专家角色API路由返回非法 role_id: {role_id!r}")
+    return {
+        "expert_role": valid_roles[role_id],
+        "route": {
+            "method": "api",
+            "expert_role_id": role_id,
+            "reason": routed.get("reason", ""),
+        },
+    }
+
+
 def build_profile(sop: dict, sop_id: str, sample_idx: int = 0, attempt: int = 0) -> dict:
     """Build a lightweight role-driven profile for one synthetic dialogue."""
     farmer_role = random.choice(FARMER_ROLE_CARDS)
     title = sop.get("meta", {}).get("title", sop_id)
     source = sop.get("meta", {}).get("source", sop.get("source", "未知来源"))
-
-    if any(word in title for word in ["灾", "旱", "涝", "台风", "霜冻", "倒伏"]):
-        expert_pool = [r for r in EXPERT_ROLE_CARDS if r["role_id"] == "E04_disaster_response_advisor"]
-    elif any(word in title for word in ["病", "虫", "螟", "蚜", "蝉", "蛾", "龟", "虱"]):
-        expert_pool = [r for r in EXPERT_ROLE_CARDS if r["role_id"] == "E02_plant_protection_specialist"]
-    elif any(word in title for word in ["培土", "追肥", "定植", "补苗", "栽培", "水", "养分"]):
-        expert_pool = [r for r in EXPERT_ROLE_CARDS if r["role_id"] == "E03_cultivation_manager"]
-    else:
-        expert_pool = EXPERT_ROLE_CARDS
-
-    expert_role = random.choice(expert_pool or EXPERT_ROLE_CARDS)
+    route_result = route_expert_role(sop, sop_id)
+    expert_role = route_result["expert_role"]
     diagnosis = sop.get("diagnosis_criteria", {})
 
     return {
@@ -245,6 +326,7 @@ def build_profile(sop: dict, sop_id: str, sample_idx: int = 0, attempt: int = 0)
         "attempt": attempt,
         "farmer_role": farmer_role,
         "expert_role": expert_role,
+        "expert_route": route_result["route"],
         "situation": {
             "crop": sop.get("meta", {}).get("crop", "甘蔗"),
             "problem_title": title,
