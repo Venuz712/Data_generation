@@ -11,7 +11,9 @@ import random
 import re
 import statistics
 import subprocess
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import Counter, defaultdict
 from pathlib import Path
 from urllib import error, request
@@ -24,12 +26,25 @@ except ImportError:
 # ====================== 配置 ======================
 API_BASE_URL = os.getenv("AI_CENTOS_BASE_URL", "https://ai.centos.hk/v1")
 API_KEY = os.getenv("AI_CENTOS_API_KEY", "")
+API_KEYS_RAW = os.getenv("AI_CENTOS_API_KEYS", "")
 MODEL_NAME = os.getenv("AI_CENTOS_MODEL", "deepseek-v4-pro")
 MOCK_MODE = False
 DEFAULT_MAX_TURNS = 6
 DEFAULT_SLEEP_BETWEEN_CALLS = 0.5
 MAX_RETRIES = 3
 JSON_CONTENT_RETRIES = 2
+API_TIMING_LOG_PATH = None
+API_CALL_COUNTER = 0
+API_KEY_CURSOR = 0
+API_KEY_CURSOR_LOCK = threading.Lock()
+API_KEY_LOCKS_LOCK = threading.Lock()
+API_KEY_LOCKS = {}
+CLIENTS_LOCK = threading.Lock()
+FILE_WRITE_LOCK = threading.Lock()
+NON_RETRYABLE_API_ERROR_MARKERS = (
+    "model_not_found",
+    "No available channel for model",
+)
 FORBIDDEN_PHRASES = [
     "[FINAL_ANSWER]",
     "FINAL_ANSWER",
@@ -46,7 +61,7 @@ ASK_REPLY_TYPE = "ask"
 FINAL_REPLY_TYPE = "final"
 VALID_REPLY_TYPES = {ASK_REPLY_TYPE, FINAL_REPLY_TYPE}
 
-client = None
+clients_by_key_index = {}
 
 FARMER_ROLE_CARDS = [
     {
@@ -163,20 +178,108 @@ EXPERT_ROLE_CARDS = [
 ]
 
 
-def get_client():
-    """Create the optional OpenAI SDK client lazily so CLI inspection works without a key."""
-    global client
+def parse_api_keys() -> list[str]:
+    raw_keys = []
+    if API_KEYS_RAW.strip():
+        raw_keys.extend(re.split(r"[\s,;]+", API_KEYS_RAW.strip()))
+    elif API_KEY.strip():
+        raw_keys.append(API_KEY.strip())
+    return [key for key in raw_keys if key]
+
+
+def next_api_key() -> tuple[str, int]:
+    """Return the next API key and its zero-based rotation index."""
+    global API_KEY_CURSOR
+    keys = parse_api_keys()
+    if not keys:
+        raise RuntimeError("请先设置环境变量 AI_CENTOS_API_KEYS 或 AI_CENTOS_API_KEY")
+    with API_KEY_CURSOR_LOCK:
+        index = API_KEY_CURSOR % len(keys)
+        API_KEY_CURSOR += 1
+    return keys[index], index
+
+
+def get_api_key_lock(key_index: int) -> threading.Lock:
+    with API_KEY_LOCKS_LOCK:
+        if key_index not in API_KEY_LOCKS:
+            API_KEY_LOCKS[key_index] = threading.Lock()
+        return API_KEY_LOCKS[key_index]
+
+
+def lease_api_key() -> tuple[str, int, threading.Lock]:
+    """Lease the next idle API key; block only when every key is currently busy."""
+    global API_KEY_CURSOR
+    keys = parse_api_keys()
+    if not keys:
+        raise RuntimeError("请先设置环境变量 AI_CENTOS_API_KEYS 或 AI_CENTOS_API_KEY")
+
+    with API_KEY_CURSOR_LOCK:
+        for _ in range(len(keys)):
+            index = API_KEY_CURSOR % len(keys)
+            API_KEY_CURSOR += 1
+            key_lock = get_api_key_lock(index)
+            if key_lock.acquire(blocking=False):
+                return keys[index], index, key_lock
+
+        index = API_KEY_CURSOR % len(keys)
+        API_KEY_CURSOR += 1
+
+    key_lock = get_api_key_lock(index)
+    key_lock.acquire()
+    return keys[index], index, key_lock
+
+
+def get_client(api_key: str, key_index: int):
+    """Create optional OpenAI SDK clients lazily so CLI inspection works without a key."""
     if MOCK_MODE:
         return None
-    if not API_KEY:
-        raise RuntimeError("请先设置环境变量 AI_CENTOS_API_KEY")
-    if OpenAI is not None and client is None:
-        client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY, default_headers={"X-Failover-Enabled": "true"})
-    return client
+    with CLIENTS_LOCK:
+        if OpenAI is not None and key_index not in clients_by_key_index:
+            clients_by_key_index[key_index] = OpenAI(
+                base_url=API_BASE_URL,
+                api_key=api_key,
+                default_headers={"X-Failover-Enabled": "true"},
+            )
+        return clients_by_key_index.get(key_index)
 
 
-def create_chat_completion(messages, temperature=0.5, max_tokens=800):
-    active_client = get_client()
+def extract_response_meta(response):
+    if isinstance(response, dict):
+        choice = response.get("choices", [{}])[0]
+        usage = response.get("usage", {}) or {}
+        return {
+            "finish_reason": choice.get("finish_reason"),
+            "usage": usage,
+        }
+
+    choice = response.choices[0]
+    usage_obj = getattr(response, "usage", None)
+    usage = {}
+    if usage_obj is not None:
+        for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
+            value = getattr(usage_obj, key, None)
+            if value is not None:
+                usage[key] = value
+    return {
+        "finish_reason": choice.finish_reason,
+        "usage": usage,
+    }
+
+
+def log_api_timing(event: dict):
+    if API_TIMING_LOG_PATH is None:
+        return
+    payload = {
+        "ts": dt.datetime.now().isoformat(timespec="milliseconds"),
+        **event,
+    }
+    append_jsonl(API_TIMING_LOG_PATH, payload)
+
+
+def create_chat_completion(messages, temperature=0.5, max_tokens=800, api_key=None, api_key_index=None):
+    if api_key is None or api_key_index is None:
+        api_key, api_key_index = next_api_key()
+    active_client = get_client(api_key, api_key_index)
     if active_client is not None:
         return active_client.chat.completions.create(
             model=MODEL_NAME,
@@ -195,7 +298,7 @@ def create_chat_completion(messages, temperature=0.5, max_tokens=800):
         f"{API_BASE_URL.rstrip('/')}/chat/completions",
         data=payload,
         headers={
-            "Authorization": f"Bearer {API_KEY}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "User-Agent": "sop-dialogue-generator/run-based",
         },
@@ -210,15 +313,29 @@ def create_chat_completion(messages, temperature=0.5, max_tokens=800):
 
 
 # ====================== 安全的 API 调用函数 ======================
-def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES):
+def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES, label="llm_call"):
     """统一的 API 调用函数；失败时返回空字符串，由上层显式失败处理。"""
+    global API_CALL_COUNTER
     if MOCK_MODE:
         print("  [MOCK] 调用 LLM 返回占位内容")
         return "这是一个模拟的回复。请检查 API 配置。"
 
     for attempt in range(retries):
+        api_key, api_key_index, api_key_lock = lease_api_key()
+        with API_KEY_CURSOR_LOCK:
+            call_id = API_CALL_COUNTER
+            API_CALL_COUNTER += 1
+        start_time = time.monotonic()
         try:
-            response = create_chat_completion(messages, temperature=temperature, max_tokens=max_tokens)
+            response = create_chat_completion(
+                messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                api_key=api_key,
+                api_key_index=api_key_index,
+            )
+            elapsed_ms = int((time.monotonic() - start_time) * 1000)
+            response_meta = extract_response_meta(response)
             if isinstance(response, dict):
                 choice = response.get("choices", [{}])[0]
                 message = choice.get("message", {})
@@ -233,22 +350,67 @@ def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES):
                 finish_reason = choice.finish_reason
 
             if isinstance(content, str) and content.strip():
+                log_api_timing({
+                    "call_id": call_id,
+                    "label": label,
+                    "attempt": attempt + 1,
+                    "api_key_index": api_key_index,
+                    "latency_ms": elapsed_ms,
+                    "success": True,
+                    "finish_reason": response_meta.get("finish_reason"),
+                    "content_chars": len(content.strip()),
+                    "reasoning_chars": len(reasoning or ""),
+                    "usage": response_meta.get("usage", {}),
+                })
                 return content.strip()
 
             if reasoning:
                 print(f"  [INFO] content 为空，忽略 reasoning 内容并重试 (长度 {len(reasoning)})")
 
+            log_api_timing({
+                "call_id": call_id,
+                "label": label,
+                "attempt": attempt + 1,
+                "api_key_index": api_key_index,
+                "latency_ms": elapsed_ms,
+                "success": False,
+                "finish_reason": finish_reason,
+                "content_chars": 0,
+                "reasoning_chars": len(reasoning or ""),
+                "error": "empty_content",
+                "usage": response_meta.get("usage", {}),
+            })
             print(f"  API 返回空 content 且无 reasoning (finish_reason={finish_reason}, attempt {attempt + 1})")
             if attempt < retries - 1:
                 time.sleep(2)
             continue
 
         except Exception as exc:
+            elapsed_ms = int((time.monotonic() - start_time) * 1000)
+            error_message = str(exc)
+            non_retryable = any(marker in error_message for marker in NON_RETRYABLE_API_ERROR_MARKERS)
+            log_api_timing({
+                "call_id": call_id,
+                "label": label,
+                "attempt": attempt + 1,
+                "api_key_index": api_key_index,
+                "latency_ms": elapsed_ms,
+                "success": False,
+                "error": type(exc).__name__,
+                "error_message": error_message[:500],
+                "non_retryable": non_retryable,
+            })
             print(f"  API 调用失败 (attempt {attempt + 1}/{retries}): {exc}")
+            if non_retryable:
+                if attempt < retries - 1:
+                    continue
+                raise RuntimeError(error_message)
             if attempt < retries - 1:
                 time.sleep(2)
             else:
                 return ""
+        finally:
+            api_key_lock.release()
     return ""
 
 
@@ -277,7 +439,7 @@ def call_json_llm(messages, temperature=0.3, max_tokens=1000, label="JSON") -> d
     last_error = ""
     repair_messages = list(messages)
     for attempt in range(JSON_CONTENT_RETRIES):
-        response = call_llm(repair_messages, temperature=temperature, max_tokens=max_tokens)
+        response = call_llm(repair_messages, temperature=temperature, max_tokens=max_tokens, label=label)
         try:
             return extract_json_object(response)
         except Exception as exc:
@@ -346,8 +508,9 @@ def write_json(path: Path, payload: dict):
 
 def append_jsonl(path: Path, payload: dict):
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    with FILE_WRITE_LOCK:
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
 def route_expert_role(sop: dict, sop_id: str) -> dict:
@@ -569,7 +732,7 @@ def generate_initial_question(sop: dict, profile: dict) -> str:
 
 请按角色和场景生成一个自然、不完整但具体的初始咨询问题。只输出农户发言。"""
     messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
-    return clean_text(call_llm(messages, temperature=0.7, max_tokens=500))
+    return clean_text(call_llm(messages, temperature=0.7, max_tokens=500, label="farmer_initial_question"))
 
 
 def simulate_farmer_response(expert_reply_text: str, sop: dict, profile: dict, history: list) -> str:
@@ -599,7 +762,7 @@ def simulate_farmer_response(expert_reply_text: str, sop: dict, profile: dict, h
 
 请继续按同一角色自然回答专家刚问到的问题。只输出农户发言。"""
     messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
-    return clean_text(call_llm(messages, temperature=0.7, max_tokens=500))
+    return clean_text(call_llm(messages, temperature=0.7, max_tokens=500, label="farmer_followup_response"))
 
 
 def expert_reply(sop: dict, history: list, current_user_msg: str, profile: dict) -> dict:
@@ -673,8 +836,10 @@ def generate_one_dialogue(
     route_result: dict,
     max_turns: int,
     sleep_between_calls: float,
+    rng: random.Random | None = None,
 ) -> dict:
-    farmer_role = random.choice(FARMER_ROLE_CARDS)
+    active_rng = rng or random
+    farmer_role = active_rng.choice(FARMER_ROLE_CARDS)
     scenario = generate_scenario_card(sop, sop_id, sample_idx, attempt, farmer_role)
     profile = build_profile(
         sop=sop,
@@ -849,6 +1014,8 @@ def build_quality_summary(
     task_records: list[dict],
     failure_records: list[dict],
     duplicate_rejections: int,
+    api_timing_summary: dict,
+    judge_sample_records: list[dict],
 ) -> dict:
     turn_counts = [len(record["dialog"]) for record in accepted_records]
     per_sop = Counter(record["sop_id"] for record in accepted_records)
@@ -887,6 +1054,8 @@ def build_quality_summary(
         "failure_attempt_count": len(failure_records),
         "retry_count": sum(max(0, record.get("attempts", 1) - 1) for record in task_records),
         "duplicate_rejections": duplicate_rejections,
+        "judge_sample_count": len(judge_sample_records),
+        "judge_sample_verdicts": dict(Counter(record.get("verdict", "unknown") for record in judge_sample_records)),
         "per_sop_accepted": dict(sorted(per_sop.items())),
         "turn_stats": {
             "avg": statistics.mean(turn_counts) if turn_counts else None,
@@ -901,6 +1070,7 @@ def build_quality_summary(
         "expert_role_distribution": dict(expert_distribution),
         "farmer_role_distribution": dict(farmer_distribution),
         "failures_by_reason": dict(failures_by_reason.most_common(30)),
+        "api_timing": api_timing_summary,
         "sample_dialogues": samples,
     }
 
@@ -912,6 +1082,45 @@ def write_sha256sums(run_dir: Path):
             rel = path.relative_to(run_dir)
             entries.append(f"{file_sha256(path)}  {rel.as_posix()}")
     (run_dir / "SHA256SUMS").write_text("\n".join(entries) + "\n", encoding="utf-8")
+
+
+def summarize_api_timings(timing_path: Path) -> dict:
+    if not timing_path.exists():
+        return {
+            "call_count": 0,
+            "success_count": 0,
+            "failure_count": 0,
+            "by_label": {},
+            "by_key_index": {},
+        }
+
+    events = [json.loads(line) for line in timing_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    by_label = defaultdict(list)
+    by_key = Counter()
+    success_count = 0
+    for event in events:
+        by_label[event.get("label", "unknown")].append(event.get("latency_ms", 0))
+        by_key[str(event.get("api_key_index", "unknown"))] += 1
+        if event.get("success"):
+            success_count += 1
+
+    label_summary = {}
+    for label, values in sorted(by_label.items()):
+        label_summary[label] = {
+            "count": len(values),
+            "avg_ms": statistics.mean(values) if values else None,
+            "min_ms": min(values) if values else None,
+            "max_ms": max(values) if values else None,
+            "p95_ms": p95(values),
+        }
+
+    return {
+        "call_count": len(events),
+        "success_count": success_count,
+        "failure_count": len(events) - success_count,
+        "by_label": label_summary,
+        "by_key_index": dict(sorted(by_key.items())),
+    }
 
 
 def safe_model_name(model_name: str) -> str:
@@ -927,13 +1136,21 @@ def parse_args():
     parser.add_argument("--max-generation-attempts", type=int, default=2, help="Attempts per SOP sample before dropping.")
     parser.add_argument("--max-turns", type=int, default=DEFAULT_MAX_TURNS, help="Maximum dialogue turns.")
     parser.add_argument("--strict", action="store_true", help="Run LLM fact-boundary judge before accepting samples.")
+    parser.add_argument(
+        "--judge-sample-rate",
+        type=float,
+        default=0.0,
+        help="Optional non-gating LLM judge sample rate for accepted records when --strict is off.",
+    )
     parser.add_argument("--seed", type=int, default=20260604, help="Random seed.")
     parser.add_argument("--limit-sops", type=int, default=0, help="Limit number of SOP files, useful for smoke tests.")
+    parser.add_argument("--concurrency", type=int, default=1, help="Number of SOP files to process concurrently.")
     parser.add_argument("--sleep-between-calls", type=float, default=DEFAULT_SLEEP_BETWEEN_CALLS)
     return parser.parse_args()
 
 
 def main():
+    global API_TIMING_LOG_PATH
     args = parse_args()
     if args.samples_per_sop < 1:
         raise ValueError("--samples-per-sop 必须 >= 1")
@@ -941,6 +1158,10 @@ def main():
         raise ValueError("--max-generation-attempts 必须 >= 1")
     if args.max_turns < 1:
         raise ValueError("--max-turns 必须 >= 1")
+    if args.concurrency < 1:
+        raise ValueError("--concurrency 必须 >= 1")
+    if args.judge_sample_rate < 0 or args.judge_sample_rate > 1:
+        raise ValueError("--judge-sample-rate 必须在 0 到 1 之间")
 
     random.seed(args.seed)
     input_dir = Path(args.input_dir)
@@ -953,10 +1174,14 @@ def main():
         raise RuntimeError(f"run 目录已存在且非空: {run_dir}")
 
     reports_dir = run_dir / "reports"
+    logs_dir = run_dir / "logs"
     reports_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    API_TIMING_LOG_PATH = logs_dir / "api_calls.jsonl"
     dialogues_path = run_dir / "dialogues.jsonl"
     tasks_path = run_dir / "tasks.jsonl"
     failures_path = run_dir / "failures.jsonl"
+    judge_samples_path = reports_dir / "judge_samples.jsonl"
 
     json_files = sorted(input_dir.glob("*_complex.json"))
     if args.limit_sops:
@@ -977,9 +1202,12 @@ def main():
         "max_generation_attempts": args.max_generation_attempts,
         "max_turns": args.max_turns,
         "strict": args.strict,
+        "judge_sample_rate": args.judge_sample_rate,
         "seed": args.seed,
         "limit_sops": args.limit_sops,
+        "concurrency": args.concurrency,
         "sop_file_count": len(json_files),
+        "api_key_count": len(parse_api_keys()),
         "forbidden_phrases": FORBIDDEN_PHRASES,
     }
     write_json(run_dir / "config.json", config)
@@ -991,10 +1219,18 @@ def main():
     accepted_records = []
     task_records = []
     failure_records = []
-    accepted_by_sop = defaultdict(list)
+    judge_sample_records = []
     duplicate_rejections = 0
 
-    for json_file in json_files:
+    def process_json_file(item: tuple[int, Path]) -> dict:
+        file_index, json_file = item
+        rng = random.Random(args.seed + file_index * 1009)
+        local_accepted_records = []
+        local_task_records = []
+        local_failure_records = []
+        local_judge_sample_records = []
+        local_duplicate_rejections = 0
+        accepted_for_sop = []
         relative_sop_file = str(json_file)
         print(f"\n处理: {json_file.name}")
         try:
@@ -1013,11 +1249,18 @@ def main():
                     "reason": reason,
                 }
                 append_jsonl(failures_path, failure)
-                failure_records.append(failure)
+                local_failure_records.append(failure)
                 task = {"task_id": task_id, "file": relative_sop_file, "sop_id": "UNKNOWN", "sample_idx": sample_idx, "status": "failed", "attempts": 0, "reason": reason}
                 append_jsonl(tasks_path, task)
-                task_records.append(task)
-            continue
+                local_task_records.append(task)
+            return {
+                "file_index": file_index,
+                "accepted_records": local_accepted_records,
+                "task_records": local_task_records,
+                "failure_records": local_failure_records,
+                "judge_sample_records": local_judge_sample_records,
+                "duplicate_rejections": local_duplicate_rejections,
+            }
 
         sop_id = sop.get("meta", {}).get("title", json_file.name.replace("_complex.json", ""))
         try:
@@ -1037,11 +1280,18 @@ def main():
                     "reason": reason,
                 }
                 append_jsonl(failures_path, failure)
-                failure_records.append(failure)
+                local_failure_records.append(failure)
                 task = {"task_id": task_id, "file": relative_sop_file, "sop_id": sop_id, "sample_idx": sample_idx, "status": "failed", "attempts": 0, "reason": reason}
                 append_jsonl(tasks_path, task)
-                task_records.append(task)
-            continue
+                local_task_records.append(task)
+            return {
+                "file_index": file_index,
+                "accepted_records": local_accepted_records,
+                "task_records": local_task_records,
+                "failure_records": local_failure_records,
+                "judge_sample_records": local_judge_sample_records,
+                "duplicate_rejections": local_duplicate_rejections,
+            }
 
         for sample_idx in range(args.samples_per_sop):
             task_id = make_task_id(run_id, json_file.name, sample_idx)
@@ -1063,14 +1313,15 @@ def main():
                         route_result=route_result,
                         max_turns=args.max_turns,
                         sleep_between_calls=args.sleep_between_calls,
+                        rng=rng,
                     )
                     ok, reason = validate_dialogue_structure(record, args.max_turns)
                     if not ok:
                         raise RuntimeError(f"结构/风格校验失败: {reason}")
 
-                    duplicate, duplicate_reason = is_duplicate_candidate(record, accepted_by_sop[sop_id])
+                    duplicate, duplicate_reason = is_duplicate_candidate(record, accepted_for_sop)
                     if duplicate:
-                        duplicate_rejections += 1
+                        local_duplicate_rejections += 1
                         raise RuntimeError(f"近重复样本: {duplicate_reason}")
 
                     if args.strict:
@@ -1091,7 +1342,7 @@ def main():
                                 "reason": final_reason,
                             }
                             append_jsonl(failures_path, failure)
-                            failure_records.append(failure)
+                            local_failure_records.append(failure)
                             if judge["verdict"] == "drop":
                                 break
                             continue
@@ -1101,10 +1352,32 @@ def main():
                             "reason": "strict judge disabled; structural/style/dedup validators passed",
                             "validator": "local_validators",
                         }
+                        if args.judge_sample_rate and random.random() < args.judge_sample_rate:
+                            try:
+                                judge = judge_dialogue_against_sop(sop, record)
+                                judge_record = {
+                                    "task_id": task_id,
+                                    "sop_id": sop_id,
+                                    "sample_idx": sample_idx,
+                                    "attempt": attempt,
+                                    "verdict": judge["verdict"],
+                                    "reason": judge["reason"],
+                                }
+                            except Exception as exc:
+                                judge_record = {
+                                    "task_id": task_id,
+                                    "sop_id": sop_id,
+                                    "sample_idx": sample_idx,
+                                    "attempt": attempt,
+                                    "verdict": "judge_error",
+                                    "reason": str(exc),
+                            }
+                            append_jsonl(judge_samples_path, judge_record)
+                            local_judge_sample_records.append(judge_record)
 
                     append_jsonl(dialogues_path, record)
-                    accepted_records.append(record)
-                    accepted_by_sop[sop_id].append({
+                    local_accepted_records.append(record)
+                    accepted_for_sop.append({
                         "first_user": record["dialog"][0]["user"],
                         "final_answer": record["dialog"][-1]["assistant"],
                     })
@@ -1117,7 +1390,7 @@ def main():
                         "attempts": attempts_used,
                     }
                     append_jsonl(tasks_path, task)
-                    task_records.append(task)
+                    local_task_records.append(task)
                     accepted = True
                     print("    accepted")
                     break
@@ -1134,7 +1407,7 @@ def main():
                         "reason": final_reason,
                     }
                     append_jsonl(failures_path, failure)
-                    failure_records.append(failure)
+                    local_failure_records.append(failure)
                     time.sleep(1)
 
             if not accepted:
@@ -1148,7 +1421,40 @@ def main():
                     "reason": final_reason,
                 }
                 append_jsonl(tasks_path, task)
-                task_records.append(task)
+                local_task_records.append(task)
+
+        return {
+            "file_index": file_index,
+            "accepted_records": local_accepted_records,
+            "task_records": local_task_records,
+            "failure_records": local_failure_records,
+            "judge_sample_records": local_judge_sample_records,
+            "duplicate_rejections": local_duplicate_rejections,
+        }
+
+    def collect_result(result: dict):
+        nonlocal duplicate_rejections
+        accepted_records.extend(result["accepted_records"])
+        task_records.extend(result["task_records"])
+        failure_records.extend(result["failure_records"])
+        judge_sample_records.extend(result["judge_sample_records"])
+        duplicate_rejections += result["duplicate_rejections"]
+
+    work_items = list(enumerate(json_files))
+    worker_count = min(args.concurrency, len(work_items))
+    if worker_count == 1:
+        for item in work_items:
+            collect_result(process_json_file(item))
+    else:
+        print(f"并发处理: {worker_count} 个 SOP worker")
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            future_to_item = {executor.submit(process_json_file, item): item for item in work_items}
+            for future in as_completed(future_to_item):
+                collect_result(future.result())
+
+    accepted_records.sort(key=lambda record: (record.get("sop_id", ""), record.get("sample_idx", 0), record.get("attempt", 0)))
+    task_records.sort(key=lambda record: (record.get("sop_id", ""), record.get("sample_idx", 0), record.get("attempts", 0)))
+    failure_records.sort(key=lambda record: (record.get("sop_id", ""), record.get("sample_idx", 0), record.get("attempt", 0)))
 
     summary = build_quality_summary(
         run_id=run_id,
@@ -1157,6 +1463,8 @@ def main():
         task_records=task_records,
         failure_records=failure_records,
         duplicate_rejections=duplicate_rejections,
+        api_timing_summary=summarize_api_timings(API_TIMING_LOG_PATH),
+        judge_sample_records=judge_sample_records,
     )
     write_json(reports_dir / "quality_summary.json", summary)
     write_sha256sums(run_dir)
@@ -1169,6 +1477,9 @@ def main():
     print(f"failed tasks: {summary['failed_task_count']}")
     print(f"failure attempts: {summary['failure_attempt_count']}")
     print(f"duplicate rejections: {duplicate_rejections}")
+    print(f"api calls: {summary['api_timing']['call_count']} (failures: {summary['api_timing']['failure_count']})")
+    for label, stats in summary["api_timing"]["by_label"].items():
+        print(f"  {label}: count={stats['count']} avg_ms={stats['avg_ms']:.0f} max_ms={stats['max_ms']}")
     print(f"对话文件: {dialogues_path}")
     print(f"质量报告: {reports_dir / 'quality_summary.json'}")
 
