@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
+import argparse
+import datetime as dt
+import difflib
+import hashlib
 import json
-import time
+import os
 import random
-from urllib import request, error
+import re
+import statistics
+import subprocess
+import time
+from collections import Counter, defaultdict
+from pathlib import Path
+from urllib import error, request
 
 try:
     from openai import OpenAI
@@ -17,10 +26,27 @@ API_BASE_URL = os.getenv("AI_CENTOS_BASE_URL", "https://ai.centos.hk/v1")
 API_KEY = os.getenv("AI_CENTOS_API_KEY", "")
 MODEL_NAME = os.getenv("AI_CENTOS_MODEL", "deepseek-v4-pro")
 MOCK_MODE = False
-MAX_TURNS = 10                     # 最大对话轮数
-SLEEP_BETWEEN_CALLS = 0.5
+DEFAULT_MAX_TURNS = 6
+DEFAULT_SLEEP_BETWEEN_CALLS = 0.5
 MAX_RETRIES = 3
-FINAL_TAG = "[FINAL_ANSWER]"
+JSON_CONTENT_RETRIES = 2
+FORBIDDEN_PHRASES = [
+    "[FINAL_ANSWER]",
+    "FINAL_ANSWER",
+    "老乡",
+    "老哥",
+    "为了给您出最准",
+    "专家您好",
+    "根据SOP",
+    "按SOP",
+    "根据 SOP",
+    "按 SOP",
+]
+ASK_REPLY_TYPE = "ask"
+FINAL_REPLY_TYPE = "final"
+VALID_REPLY_TYPES = {ASK_REPLY_TYPE, FINAL_REPLY_TYPE}
+
+client = None
 
 FARMER_ROLE_CARDS = [
     {
@@ -136,18 +162,23 @@ EXPERT_ROLE_CARDS = [
     },
 ]
 
-if not MOCK_MODE and not API_KEY:
-    raise RuntimeError("请先设置环境变量 AI_CENTOS_API_KEY")
 
-if not MOCK_MODE and OpenAI is not None:
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY, default_headers={"X-Failover-Enabled": "true"})
-else:
-    client = None
+def get_client():
+    """Create the optional OpenAI SDK client lazily so CLI inspection works without a key."""
+    global client
+    if MOCK_MODE:
+        return None
+    if not API_KEY:
+        raise RuntimeError("请先设置环境变量 AI_CENTOS_API_KEY")
+    if OpenAI is not None and client is None:
+        client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY, default_headers={"X-Failover-Enabled": "true"})
+    return client
 
 
 def create_chat_completion(messages, temperature=0.5, max_tokens=800):
-    if client is not None:
-        return client.chat.completions.create(
+    active_client = get_client()
+    if active_client is not None:
+        return active_client.chat.completions.create(
             model=MODEL_NAME,
             messages=messages,
             temperature=temperature,
@@ -166,7 +197,7 @@ def create_chat_completion(messages, temperature=0.5, max_tokens=800):
         headers={
             "Authorization": f"Bearer {API_KEY}",
             "Content-Type": "application/json",
-            "User-Agent": "sop-dialogue-generator/role-test",
+            "User-Agent": "sop-dialogue-generator/run-based",
         },
         method="POST",
     )
@@ -177,9 +208,10 @@ def create_chat_completion(messages, temperature=0.5, max_tokens=800):
         detail = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
 
+
 # ====================== 安全的 API 调用函数 ======================
 def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES):
-    """统一的 API 调用函数，支持 Qwen 推理模型的 reasoning 回退"""
+    """统一的 API 调用函数；失败时返回空字符串，由上层显式失败处理。"""
     if MOCK_MODE:
         print("  [MOCK] 调用 LLM 返回占位内容")
         return "这是一个模拟的回复。请检查 API 配置。"
@@ -188,35 +220,34 @@ def call_llm(messages, temperature=0.5, max_tokens=800, retries=MAX_RETRIES):
         try:
             response = create_chat_completion(messages, temperature=temperature, max_tokens=max_tokens)
             if isinstance(response, dict):
-                message = response.get("choices", [{}])[0].get("message", {})
+                choice = response.get("choices", [{}])[0]
+                message = choice.get("message", {})
                 content = message.get("content")
                 reasoning = message.get("reasoning") or message.get("reasoning_content")
-                finish_reason = response.get("choices", [{}])[0].get("finish_reason")
+                finish_reason = choice.get("finish_reason")
             else:
-                message = response.choices[0].message
+                choice = response.choices[0]
+                message = choice.message
                 content = message.content
                 reasoning = getattr(message, "reasoning", None) or getattr(message, "reasoning_content", None)
-                finish_reason = response.choices[0].finish_reason
+                finish_reason = choice.finish_reason
 
-            # 如果正常返回 content
             if isinstance(content, str) and content.strip():
                 return content.strip()
 
             if reasoning:
                 print(f"  [INFO] content 为空，忽略 reasoning 内容并重试 (长度 {len(reasoning)})")
 
-            # 既无 content 也无 reasoning
-            print(f"  API 返回空 content 且无 reasoning (finish_reason={finish_reason}, attempt {attempt+1})")
+            print(f"  API 返回空 content 且无 reasoning (finish_reason={finish_reason}, attempt {attempt + 1})")
             if attempt < retries - 1:
                 time.sleep(2)
             continue
 
-        except Exception as e:
-            print(f"  API 调用失败 (attempt {attempt+1}/{retries}): {e}")
+        except Exception as exc:
+            print(f"  API 调用失败 (attempt {attempt + 1}/{retries}): {exc}")
             if attempt < retries - 1:
                 time.sleep(2)
             else:
-                print("  达到最大重试次数，返回空字符串")
                 return ""
     return ""
 
@@ -226,10 +257,11 @@ def extract_json_object(text: str) -> dict:
     text = (text or "").strip()
     if not text:
         raise ValueError("空响应")
-    if text.startswith("```"):
-        text = text.strip("`")
-        if text.startswith("json"):
-            text = text[4:].strip()
+
+    code_match = re.search(r"```(?:json)?\s*(.*?)\s*```", text, flags=re.DOTALL)
+    if code_match:
+        text = code_match.group(1).strip()
+
     try:
         return json.loads(text)
     except json.JSONDecodeError:
@@ -238,6 +270,84 @@ def extract_json_object(text: str) -> dict:
         if start == -1 or end == -1 or end <= start:
             raise
         return json.loads(text[start:end + 1])
+
+
+def call_json_llm(messages, temperature=0.3, max_tokens=1000, label="JSON") -> dict:
+    """Call the LLM for JSON content; invalid JSON is retried, never repaired into a sample."""
+    last_error = ""
+    repair_messages = list(messages)
+    for attempt in range(JSON_CONTENT_RETRIES):
+        response = call_llm(repair_messages, temperature=temperature, max_tokens=max_tokens)
+        try:
+            return extract_json_object(response)
+        except Exception as exc:
+            last_error = str(exc)
+            repair_messages = list(messages) + [
+                {
+                    "role": "user",
+                    "content": (
+                        f"上一次输出无法解析为合法 JSON，错误是：{last_error}。\n"
+                        "请重新输出一个合法 JSON 对象。不要输出解释、Markdown、换行列表或 JSON 之外的文字。"
+                    ),
+                }
+            ]
+    raise RuntimeError(f"{label} JSON解析失败: {last_error}")
+
+
+def clean_text(text: str) -> str:
+    return (text or "").strip()
+
+
+def normalize_for_similarity(text: str) -> str:
+    text = re.sub(r"\s+", "", text or "")
+    text = re.sub(r"[，。！？、；：,.!?;:\"'“”‘’（）()【】\[\]{}<>《》]", "", text)
+    return text
+
+
+def text_similarity(a: str, b: str) -> float:
+    a_norm = normalize_for_similarity(a)
+    b_norm = normalize_for_similarity(b)
+    if not a_norm or not b_norm:
+        return 0.0
+    return difflib.SequenceMatcher(None, a_norm, b_norm).ratio()
+
+
+def contains_forbidden(text: str) -> list[str]:
+    return [phrase for phrase in FORBIDDEN_PHRASES if phrase in (text or "")]
+
+
+def get_code_commit() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip()
+    except Exception:
+        return "unknown"
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_json(path: Path, payload: dict):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(payload, handle, ensure_ascii=False, indent=2)
+        handle.write("\n")
+
+
+def append_jsonl(path: Path, payload: dict):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
 def route_expert_role(sop: dict, sop_id: str) -> dict:
@@ -292,12 +402,12 @@ def route_expert_role(sop: dict, sop_id: str) -> dict:
   "reason": "一句话说明选择依据"
 }}
 """
-    response = call_llm(
+    routed = call_json_llm(
         [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
         temperature=0,
-        max_tokens=500,
+        max_tokens=1200,
+        label="专家角色路由",
     )
-    routed = extract_json_object(response)
     role_id = routed.get("expert_role_id")
     if role_id not in valid_roles:
         raise RuntimeError(f"专家角色API路由返回非法 role_id: {role_id!r}")
@@ -311,12 +421,87 @@ def route_expert_role(sop: dict, sop_id: str) -> dict:
     }
 
 
-def build_profile(sop: dict, sop_id: str, sample_idx: int = 0, attempt: int = 0) -> dict:
+def sop_summary_for_prompt(sop: dict, sop_id: str) -> dict:
+    diagnosis = sop.get("diagnosis_criteria", {})
+    response_matrix = sop.get("response_matrix", {})
+    return {
+        "sop_id": sop_id,
+        "title": sop.get("meta", {}).get("title", sop_id),
+        "crop": sop.get("meta", {}).get("crop", "甘蔗"),
+        "growth_stage": sop.get("meta", {}).get("growth_stage", ""),
+        "symptoms": diagnosis.get("symptoms", [])[:8],
+        "triggers": diagnosis.get("triggers", [])[:6],
+        "key_entities": [
+            entity.get("name", "")
+            for entity in sop.get("missing_info_strategy", {}).get("key_entities", [])
+            if entity.get("name")
+        ],
+        "response_summaries": [
+            {
+                "condition_checks": scenario.get("condition_checks", {}),
+                "response_type": scenario.get("response_type", ""),
+                "content": str(scenario.get("content", ""))[:600],
+            }
+            for scenario in response_matrix.get("scenarios", [])[:3]
+        ],
+    }
+
+
+def generate_scenario_card(sop: dict, sop_id: str, sample_idx: int, attempt: int, farmer_role: dict) -> dict:
+    """Generate one source-bounded scenario card for one dialogue."""
+    system_prompt = """你是农业咨询数据生成流水线中的场景设计器。
+你只能基于给定 SOP 摘要设计农户咨询场景。
+场景只改变表达方式、信息缺口、约束和咨询入口，不得添加 SOP 外的农业事实、药剂、剂量、时期或地区适用性。
+必须只输出一个 JSON 对象，不要输出 Markdown 或多余文本。
+"""
+    user_prompt = f"""【SOP 摘要】
+{json.dumps(sop_summary_for_prompt(sop, sop_id), ensure_ascii=False, indent=2)}
+
+【农户角色】
+{json.dumps(farmer_role, ensure_ascii=False, indent=2)}
+
+【样本编号】
+sample_idx={sample_idx}, attempt={attempt}
+
+请输出一个场景卡。所有字段都必须是单行短字符串，不要使用数组、换行列表或 Markdown。
+格式严格如下：
+{{
+  "problem_entry": "症状诊断|预防管理|操作执行|灾后补救|效果不明显|误区纠正|成本约束|信息不确定",
+  "opening_angle": "农户第一句话应从哪个真实担心切入",
+  "known_context": "农户一开始可以知道并说出的1-3个事实，用分号隔开",
+  "hidden_or_missing_info": "需要专家自然追问或农户后续才补充的信息，用分号隔开",
+  "constraint": "缺药/缺工/预算/天气/临近采收/信息不确定等约束，没有则写无",
+  "dialogue_goal": "专家最终应解决的咨询目标",
+  "do_not_add": "不要添加 SOP 外药剂、剂量、时期、品种或地区适用性"
+}}
+"""
+    scenario = call_json_llm(
+        [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+        temperature=0.75,
+        max_tokens=1400,
+        label="场景卡",
+    )
+    required = ["problem_entry", "opening_angle", "known_context", "hidden_or_missing_info", "constraint", "dialogue_goal"]
+    missing = [field for field in required if not scenario.get(field)]
+    if missing:
+        raise RuntimeError(f"场景卡缺少字段: {', '.join(missing)}")
+    scenario["scenario_id"] = f"sc_{sample_idx:04d}_attempt_{attempt}"
+    scenario["farmer_role_id"] = farmer_role["role_id"]
+    return scenario
+
+
+def build_profile(
+    sop: dict,
+    sop_id: str,
+    sample_idx: int,
+    attempt: int,
+    farmer_role: dict,
+    route_result: dict,
+    scenario: dict,
+) -> dict:
     """Build a lightweight role-driven profile for one synthetic dialogue."""
-    farmer_role = random.choice(FARMER_ROLE_CARDS)
     title = sop.get("meta", {}).get("title", sop_id)
     source = sop.get("meta", {}).get("source", sop.get("source", "未知来源"))
-    route_result = route_expert_role(sop, sop_id)
     expert_role = route_result["expert_role"]
     diagnosis = sop.get("diagnosis_criteria", {})
 
@@ -334,6 +519,7 @@ def build_profile(sop: dict, sop_id: str, sample_idx: int = 0, attempt: int = 0)
             "source": source,
             "symptom_seeds": diagnosis.get("symptoms", [])[:4],
             "trigger_seeds": diagnosis.get("triggers", [])[:3],
+            "scenario": scenario,
             "generation_note": "情境只用于保持对话一致，不是逐项追问清单。",
         },
     }
@@ -371,7 +557,7 @@ def generate_initial_question(sop: dict, profile: dict) -> str:
 2. 像真实咨询：有观察、有担心、有不确定，不要一次性把信息说全。
 3. 不要使用“老乡”“老哥”等固定称呼，也不要每次都用“专家您好我想咨询一下”。
 4. 不要列字段，不要像问卷答案，不要复述SOP。
-5. 角色只影响表达方式、关注点和信息披露习惯，不能创造SOP之外的农业事实。
+5. 角色和场景只影响表达方式、关注点和信息披露习惯，不能创造SOP之外的农业事实。
 """
     user_prompt = f"""【角色与情境】
 {profile_prompt_block(profile, "farmer")}
@@ -381,13 +567,18 @@ def generate_initial_question(sop: dict, profile: dict) -> str:
 问题：{title}
 可观察症状种子：{json.dumps(symptoms, ensure_ascii=False)}
 
-    请按角色生成一个自然、不完整但具体的初始咨询问题。只输出农户发言。"""
+请按角色和场景生成一个自然、不完整但具体的初始咨询问题。只输出农户发言。"""
     messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
-    return call_llm(messages, temperature=0.7, max_tokens=500)
+    return clean_text(call_llm(messages, temperature=0.7, max_tokens=500))
 
-def simulate_farmer_response(prev_question: str, expert_reply: str, sop: dict, profile: dict, history: list) -> str:
+
+def simulate_farmer_response(expert_reply_text: str, sop: dict, profile: dict, history: list) -> str:
     history_text = "\n".join(
-        [f"农户：{turn.get('user', '')}\n专家：{turn.get('assistant', '')}" for turn in history if turn.get("assistant")]
+        [
+            f"农户：{turn.get('user', '')}\n专家：{turn.get('assistant', '')}"
+            for turn in history
+            if turn.get("assistant")
+        ]
     )
     system_prompt = """你继续扮演同一个甘蔗种植户。
 要求：
@@ -404,40 +595,42 @@ def simulate_farmer_response(prev_question: str, expert_reply: str, sop: dict, p
 {history_text}
 
 【专家刚才说】
-{expert_reply}
+{expert_reply_text}
 
-【农户上一轮发言】
-{prev_question}
-
-    请继续按同一角色自然回答专家刚问到的问题。只输出农户发言。"""
+请继续按同一角色自然回答专家刚问到的问题。只输出农户发言。"""
     messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
-    return call_llm(messages, temperature=0.7, max_tokens=500)
+    return clean_text(call_llm(messages, temperature=0.7, max_tokens=500))
 
-def expert_reply(sop: dict, history: list, current_user_msg: str, profile: dict) -> str:
-    """Generate the expert side of a natural diagnostic consultation."""
-    # 这些信息点只作为诊断参考，不作为逐项填槽清单。
+
+def expert_reply(sop: dict, history: list, current_user_msg: str, profile: dict) -> dict:
+    """Generate the expert side as structured JSON without visible control tags."""
     key_entities = sop.get("missing_info_strategy", {}).get("key_entities", [])
-    key_names = [e.get("name", "") for e in key_entities if e.get("name")]
+    key_names = [entity.get("name", "") for entity in key_entities if entity.get("name")]
 
-    # 构建完整的对话历史（包括之前的专家回复和农民回复）
     full_history = []
-    for turn in history:   # history 是 [{"user": "...", "assistant": "..."}, ...] 格式
+    for turn in history:
         full_history.append(f"农民：{turn['user']}")
         if turn.get("assistant"):
             full_history.append(f"专家：{turn['assistant']}")
-    # 加入最新农民消息（还没专家回复）
     full_history.append(f"农民：{current_user_msg}")
     history_text = "\n".join(full_history)
 
-    system_prompt = f"""你扮演角色卡中的甘蔗农技专家，正在和真实农户多轮咨询。
+    system_prompt = """你扮演角色卡中的甘蔗农技专家，正在和真实农户多轮咨询。
+必须只输出一个 JSON 对象，不要输出 Markdown 或 JSON 之外的文字。
+JSON 格式只能是：
+{"reply_type": "ask", "content": "自然追问内容"}
+或：
+{"reply_type": "final", "content": "完整最终方案"}
+
 要求：
 1. SOP是事实参考和安全边界，不是模板答案，也不是逐项追问清单。
 2. 先回应农户的具体担心，再判断当前信息是否足以给出建议。
-3. 如果信息不足，只追问1-2个最影响判断或处理建议的问题，并简短说明为什么问。
-4. 不要机械追问字段，不要连续列问卷，不要重复农户已经回答过的问题。
-5. 建议必须落在SOP支持范围内；SOP不支持的具体药剂、剂量、时期、品种不要生成。
-6. 不要使用“老乡”“老哥”“为了给您出最准的方子”等固定套话。
-7. 当信息已经足够时，回复必须以 `{FINAL_TAG}` 开头，给出自然、可执行的最终方案；最终方案中不要再追问。
+3. 如果信息不足，reply_type 必须为 ask；只追问1-2个最影响判断或处理建议的问题，并简短说明为什么问。
+4. 如果信息已经足够，reply_type 必须为 final；content 给出自然、可执行的最终方案，且不要再追问。
+5. 不要机械追问字段，不要连续列问卷，不要重复农户已经回答过的问题。
+6. 建议必须落在SOP支持范围内；SOP不支持的具体药剂、剂量、时期、品种不要生成。
+7. 不要使用“老乡”“老哥”“为了给您出最准的方子”等固定套话。
+8. content 中不要出现 [FINAL_ANSWER] 或任何控制标签。
 """
 
     user_prompt = f"""【角色与情境】
@@ -449,133 +642,536 @@ def expert_reply(sop: dict, history: list, current_user_msg: str, profile: dict)
 【完整的对话历史】
 {history_text}
 农民最新说的话：{current_user_msg}
+
 【SOP完整内容（供你参考诊断条件、响应方案等）】
 {json.dumps(sop, ensure_ascii=False, indent=2)}
 
-请根据当前信息状态，决定回复：
-- 如果还缺影响判断的关键信息，像真实专家一样自然追问1-2个问题。
-- 如果信息已经足够，输出以 {FINAL_TAG} 开头的完整方案。
-只输出回复内容。"""
+请根据当前信息状态输出 JSON。"""
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt}
+        {"role": "user", "content": user_prompt},
     ]
-    return call_llm(messages, temperature=0.3, max_tokens=1400)
+    payload = call_json_llm(messages, temperature=0.3, max_tokens=2200, label="专家结构化回复")
+    reply_type = payload.get("reply_type")
+    content = clean_text(payload.get("content", ""))
+    if reply_type not in VALID_REPLY_TYPES:
+        raise RuntimeError(f"专家结构化回复 reply_type 非法: {reply_type!r}")
+    if not content:
+        raise RuntimeError("专家结构化回复 content 为空")
+    return {"reply_type": reply_type, "content": content}
 
-def generate_one_dialogue(sop: dict, sop_id: str, sample_idx: int = 0, attempt: int = 0) -> dict:
-    profile = build_profile(sop, sop_id, sample_idx=sample_idx, attempt=attempt)
+
+def generate_one_dialogue(
+    sop: dict,
+    sop_id: str,
+    sop_file: str,
+    run_id: str,
+    task_id: str,
+    sample_idx: int,
+    attempt: int,
+    route_result: dict,
+    max_turns: int,
+    sleep_between_calls: float,
+) -> dict:
+    farmer_role = random.choice(FARMER_ROLE_CARDS)
+    scenario = generate_scenario_card(sop, sop_id, sample_idx, attempt, farmer_role)
+    profile = build_profile(
+        sop=sop,
+        sop_id=sop_id,
+        sample_idx=sample_idx,
+        attempt=attempt,
+        farmer_role=farmer_role,
+        route_result=route_result,
+        scenario=scenario,
+    )
     history = []
     first_q = generate_initial_question(sop, profile)
     if not first_q:
         raise RuntimeError("农户初始问题生成为空")
-    history.append({"user": first_q, "assistant": ""})
+    history.append({"user": first_q, "assistant": "", "assistant_reply_type": ""})
 
-    for turn_idx in range(1, MAX_TURNS + 1):
-        expert_msg = expert_reply(sop, history[:-1], history[-1]["user"], profile)
-        if not expert_msg:
-            raise RuntimeError(f"第{turn_idx}轮专家回复为空")
+    final_turn_index = None
+    for turn_idx in range(1, max_turns + 1):
+        expert_payload = expert_reply(sop, history[:-1], history[-1]["user"], profile)
+        expert_msg = expert_payload["content"]
+        reply_type = expert_payload["reply_type"]
         history[-1]["assistant"] = expert_msg
-        time.sleep(SLEEP_BETWEEN_CALLS)
+        history[-1]["assistant_reply_type"] = reply_type
+        time.sleep(sleep_between_calls)
 
-        # 检查是否结束：专家回复中包含 [FINAL_ANSWER] 即视为给出最终方案
-        if FINAL_TAG in expert_msg:
+        if reply_type == FINAL_REPLY_TYPE:
+            final_turn_index = len(history) - 1
             print(f"    第{turn_idx}轮专家给出最终方案，对话结束。")
             break
 
-        # 如果专家没有追问（没有问句），候选样本不完整，交给上层失败处理
         if "?" not in expert_msg and "？" not in expert_msg:
             raise RuntimeError(f"第{turn_idx}轮专家未追问且未给出最终方案")
 
-        # 农民回答追问
-        farmer_answer = simulate_farmer_response(history[-1]["user"], expert_msg, sop, profile, history)
+        farmer_answer = simulate_farmer_response(expert_msg, sop, profile, history)
         if not farmer_answer:
             raise RuntimeError(f"第{turn_idx}轮农户回复为空")
-        history.append({"user": farmer_answer, "assistant": ""})
-        time.sleep(SLEEP_BETWEEN_CALLS)
+        history.append({"user": farmer_answer, "assistant": "", "assistant_reply_type": ""})
+        time.sleep(sleep_between_calls)
 
-    if FINAL_TAG not in history[-1]["assistant"]:
-        raise RuntimeError(f"达到最大轮数 {MAX_TURNS} 后仍未给出最终方案")
+    if final_turn_index is None:
+        raise RuntimeError(f"达到最大轮数 {max_turns} 后仍未给出最终方案")
+
+    assistant_reply_types = [turn.get("assistant_reply_type", "") for turn in history]
     return {
-        "schema_version": "dialogue_v1",
+        "schema_version": "dialogue_run_v2",
+        "run_id": run_id,
+        "task_id": task_id,
         "sop_id": sop_id,
+        "sop_file": sop_file,
+        "sample_idx": sample_idx,
+        "attempt": attempt,
+        "scenario": scenario,
         "profile": profile,
         "dialog": history,
+        "final_turn_index": final_turn_index,
+        "assistant_reply_types": assistant_reply_types,
     }
 
+
+def validate_dialogue_structure(record: dict, max_turns: int) -> tuple[bool, str]:
+    dialog = record.get("dialog", [])
+    if not dialog:
+        return False, "dialog 为空"
+    if len(dialog) > max_turns:
+        return False, f"turn 数超过限制: {len(dialog)} > {max_turns}"
+    final_turn_index = record.get("final_turn_index")
+    if final_turn_index != len(dialog) - 1:
+        return False, "final_turn_index 不是最后一轮"
+    reply_types = record.get("assistant_reply_types", [])
+    if not reply_types or reply_types[-1] != FINAL_REPLY_TYPE:
+        return False, "最后一轮不是 final"
+    if any(reply_type == FINAL_REPLY_TYPE for reply_type in reply_types[:-1]):
+        return False, "final 后仍存在后续对话"
+
+    ask_texts = []
+    for idx, turn in enumerate(dialog):
+        user_text = clean_text(turn.get("user", ""))
+        assistant_text = clean_text(turn.get("assistant", ""))
+        reply_type = turn.get("assistant_reply_type", "")
+        if not user_text or not assistant_text:
+            return False, f"第{idx + 1}轮存在空回复"
+        if reply_type not in VALID_REPLY_TYPES:
+            return False, f"第{idx + 1}轮 assistant_reply_type 非法: {reply_type!r}"
+        forbidden = contains_forbidden(user_text + assistant_text)
+        if forbidden:
+            return False, f"出现禁止短语: {', '.join(sorted(set(forbidden)))}"
+        if reply_type == ASK_REPLY_TYPE:
+            if "?" not in assistant_text and "？" not in assistant_text:
+                return False, f"第{idx + 1}轮 ask 回复没有追问"
+            for previous in ask_texts:
+                if text_similarity(previous, assistant_text) >= 0.82:
+                    return False, "专家重复追问"
+            ask_texts.append(assistant_text)
+    return True, "pass"
+
+
+def is_duplicate_candidate(record: dict, accepted_for_sop: list[dict]) -> tuple[bool, str]:
+    first_user = record["dialog"][0]["user"]
+    final_answer = record["dialog"][-1]["assistant"]
+    for previous in accepted_for_sop:
+        first_sim = text_similarity(first_user, previous["first_user"])
+        final_sim = text_similarity(final_answer, previous["final_answer"])
+        if first_sim >= 0.88:
+            return True, f"首问近重复 similarity={first_sim:.3f}"
+        if final_sim >= 0.86:
+            return True, f"最终方案近重复 similarity={final_sim:.3f}"
+        if first_sim >= 0.80 and final_sim >= 0.78:
+            return True, f"首问和最终方案组合近重复 first={first_sim:.3f}, final={final_sim:.3f}"
+    return False, "pass"
+
+
+def judge_dialogue_against_sop(sop: dict, record: dict) -> dict:
+    """Use an LLM judge only to pass/retry/drop; never repair generated content."""
+    judge_dialog = [
+        {
+            "user": turn.get("user", ""),
+            "assistant": turn.get("assistant", ""),
+            "assistant_reply_type": turn.get("assistant_reply_type", ""),
+        }
+        for turn in record.get("dialog", [])
+    ]
+    system_prompt = """你是农业合成数据质量审稿员。
+你只能判断样本是否可放行，不能改写、补全或修复样本。
+请只输出 JSON 对象，不要输出 Markdown。
+
+判定标准：
+- pass：对话自然，最终方案完整，且没有明显超出 SOP 支持范围。
+- retry：存在风格、结构、追问或轻度事实边界问题，适合重新生成。
+- drop：存在严重事实风险，例如引入 SOP 外具体药剂、剂量、时期、品种，或最终方案明显错误。
+"""
+    user_prompt = f"""【SOP】
+{json.dumps(sop, ensure_ascii=False, indent=2)}
+
+【待审对话】
+{json.dumps(judge_dialog, ensure_ascii=False, indent=2)}
+
+请输出：
+{{
+  "verdict": "pass|retry|drop",
+  "reason": "一句话说明原因"
+}}
+"""
+    result = call_json_llm(
+        [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+        temperature=0,
+        max_tokens=1000,
+        label="LLM质检",
+    )
+    verdict = result.get("verdict")
+    if verdict not in {"pass", "retry", "drop"}:
+        raise RuntimeError(f"质检 judge verdict 非法: {verdict!r}")
+    return {"verdict": verdict, "reason": clean_text(result.get("reason", ""))}
+
+
+def make_task_id(run_id: str, sop_file: str, sample_idx: int) -> str:
+    sop_hash = hashlib.sha1(sop_file.encode("utf-8")).hexdigest()[:8]
+    return f"{run_id}:{sop_hash}:sample_{sample_idx:04d}"
+
+
+def p95(values: list[int]) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = int((len(ordered) - 1) * 0.95)
+    return ordered[index]
+
+
+def build_quality_summary(
+    run_id: str,
+    config: dict,
+    accepted_records: list[dict],
+    task_records: list[dict],
+    failure_records: list[dict],
+    duplicate_rejections: int,
+) -> dict:
+    turn_counts = [len(record["dialog"]) for record in accepted_records]
+    per_sop = Counter(record["sop_id"] for record in accepted_records)
+    role_distribution = Counter(record["profile"]["profile_id"] for record in accepted_records)
+    expert_distribution = Counter(record["profile"]["expert_role"]["role_id"] for record in accepted_records)
+    farmer_distribution = Counter(record["profile"]["farmer_role"]["role_id"] for record in accepted_records)
+    forbidden_counts = Counter()
+    for record in accepted_records:
+        for turn in record["dialog"]:
+            for phrase in contains_forbidden(turn.get("user", "") + turn.get("assistant", "")):
+                forbidden_counts[phrase] += 1
+
+    failures_by_reason = Counter(record["reason"] for record in failure_records)
+    final_complete = sum(
+        1
+        for record in accepted_records
+        if record.get("final_turn_index") == len(record.get("dialog", [])) - 1
+        and record.get("assistant_reply_types", [])[-1:] == [FINAL_REPLY_TYPE]
+    )
+
+    samples = []
+    for record in accepted_records[:5]:
+        samples.append({
+            "task_id": record["task_id"],
+            "sop_id": record["sop_id"],
+            "first_user": record["dialog"][0]["user"],
+            "final_answer": record["dialog"][-1]["assistant"],
+        })
+
+    return {
+        "run_id": run_id,
+        "config": config,
+        "target_tasks": len(task_records),
+        "accepted_count": len(accepted_records),
+        "failed_task_count": sum(1 for record in task_records if record["status"] == "failed"),
+        "failure_attempt_count": len(failure_records),
+        "retry_count": sum(max(0, record.get("attempts", 1) - 1) for record in task_records),
+        "duplicate_rejections": duplicate_rejections,
+        "per_sop_accepted": dict(sorted(per_sop.items())),
+        "turn_stats": {
+            "avg": statistics.mean(turn_counts) if turn_counts else None,
+            "min": min(turn_counts) if turn_counts else None,
+            "max": max(turn_counts) if turn_counts else None,
+            "p95": p95(turn_counts),
+        },
+        "forbidden_phrase_counts": dict(forbidden_counts),
+        "final_complete_rate": final_complete / len(accepted_records) if accepted_records else 0,
+        "near_duplicate_rejection_rate": duplicate_rejections / max(1, len(failure_records)),
+        "role_distribution": dict(role_distribution),
+        "expert_role_distribution": dict(expert_distribution),
+        "farmer_role_distribution": dict(farmer_distribution),
+        "failures_by_reason": dict(failures_by_reason.most_common(30)),
+        "sample_dialogues": samples,
+    }
+
+
+def write_sha256sums(run_dir: Path):
+    entries = []
+    for path in sorted(run_dir.rglob("*")):
+        if path.is_file() and path.name != "SHA256SUMS":
+            rel = path.relative_to(run_dir)
+            entries.append(f"{file_sha256(path)}  {rel.as_posix()}")
+    (run_dir / "SHA256SUMS").write_text("\n".join(entries) + "\n", encoding="utf-8")
+
+
+def safe_model_name(model_name: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_.-]+", "-", model_name).strip("-") or "model"
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Generate high-confidence role-driven SOP dialogues.")
+    parser.add_argument("--input-dir", default="output2", help="Directory containing *_complex.json SOP files.")
+    parser.add_argument("--output-root", default="runs", help="Root directory for run outputs.")
+    parser.add_argument("--run-id", default="", help="Optional run id. Defaults to timestamp_model_commit_dialogue-v2.")
+    parser.add_argument("--samples-per-sop", type=int, default=10, help="Accepted dialogue target per SOP.")
+    parser.add_argument("--max-generation-attempts", type=int, default=2, help="Attempts per SOP sample before dropping.")
+    parser.add_argument("--max-turns", type=int, default=DEFAULT_MAX_TURNS, help="Maximum dialogue turns.")
+    parser.add_argument("--strict", action="store_true", help="Run LLM fact-boundary judge before accepting samples.")
+    parser.add_argument("--seed", type=int, default=20260604, help="Random seed.")
+    parser.add_argument("--limit-sops", type=int, default=0, help="Limit number of SOP files, useful for smoke tests.")
+    parser.add_argument("--sleep-between-calls", type=float, default=DEFAULT_SLEEP_BETWEEN_CALLS)
+    return parser.parse_args()
+
+
 def main():
-    input_dir = "output2"
-    output_dir = "dialogues_role"
-    os.makedirs(output_dir, exist_ok=True)
-    json_files = [f for f in os.listdir(input_dir) if f.endswith("_complex.json")]
+    args = parse_args()
+    if args.samples_per_sop < 1:
+        raise ValueError("--samples-per-sop 必须 >= 1")
+    if args.max_generation_attempts < 1:
+        raise ValueError("--max-generation-attempts 必须 >= 1")
+    if args.max_turns < 1:
+        raise ValueError("--max-turns 必须 >= 1")
+
+    random.seed(args.seed)
+    input_dir = Path(args.input_dir)
+    output_root = Path(args.output_root)
+    code_commit = get_code_commit()
+    timestamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = args.run_id or f"{timestamp}_{safe_model_name(MODEL_NAME)}_{code_commit}_dialogue-v2"
+    run_dir = output_root / run_id
+    if run_dir.exists() and any(run_dir.iterdir()):
+        raise RuntimeError(f"run 目录已存在且非空: {run_dir}")
+
+    reports_dir = run_dir / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    dialogues_path = run_dir / "dialogues.jsonl"
+    tasks_path = run_dir / "tasks.jsonl"
+    failures_path = run_dir / "failures.jsonl"
+
+    json_files = sorted(input_dir.glob("*_complex.json"))
+    if args.limit_sops:
+        json_files = json_files[:args.limit_sops]
     if not json_files:
         print(f"在 {input_dir} 中没有找到任何 _complex.json 文件。")
         return
 
-    print(f"找到 {len(json_files)} 个 SOP 文件，开始生成多轮对话...")
+    config = {
+        "run_id": run_id,
+        "created_at": dt.datetime.now().isoformat(timespec="seconds"),
+        "input_dir": str(input_dir),
+        "output_root": str(output_root),
+        "model": MODEL_NAME,
+        "api_base_url": API_BASE_URL,
+        "code_commit": code_commit,
+        "samples_per_sop": args.samples_per_sop,
+        "max_generation_attempts": args.max_generation_attempts,
+        "max_turns": args.max_turns,
+        "strict": args.strict,
+        "seed": args.seed,
+        "limit_sops": args.limit_sops,
+        "sop_file_count": len(json_files),
+        "forbidden_phrases": FORBIDDEN_PHRASES,
+    }
+    write_json(run_dir / "config.json", config)
 
-    # ---------- 统计变量 ----------
-    success_count = 0          # 成功生成的对话条数
-    fail_count = 0             # 失败的对话条数
-    failures = []              # 列表元素: {"file": "xxx.json", "sop_id": "xxx", "reason": "错误信息"}
+    print(f"run_id: {run_id}")
+    print(f"输出目录: {run_dir}")
+    print(f"找到 {len(json_files)} 个 SOP 文件，目标每个 SOP {args.samples_per_sop} 条 accepted 对话。")
+
+    accepted_records = []
+    task_records = []
+    failure_records = []
+    accepted_by_sop = defaultdict(list)
+    duplicate_rejections = 0
 
     for json_file in json_files:
-        file_path = os.path.join(input_dir, json_file)
-        print(f"\n处理: {json_file}")
+        relative_sop_file = str(json_file)
+        print(f"\n处理: {json_file.name}")
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                sop = json.load(f)
-        except Exception as e:
-            error_msg = f"读取JSON失败: {str(e)}"
-            print(f"  {error_msg}，跳过")
-            fail_count += 1
-            failures.append({
-                "file": json_file,
-                "sop_id": "UNKNOWN",
-                "reason": error_msg
-            })
+            with json_file.open("r", encoding="utf-8") as handle:
+                sop = json.load(handle)
+        except Exception as exc:
+            for sample_idx in range(args.samples_per_sop):
+                task_id = make_task_id(run_id, json_file.name, sample_idx)
+                reason = f"读取JSON失败: {exc}"
+                failure = {
+                    "task_id": task_id,
+                    "file": relative_sop_file,
+                    "sop_id": "UNKNOWN",
+                    "sample_idx": sample_idx,
+                    "attempt": 0,
+                    "reason": reason,
+                }
+                append_jsonl(failures_path, failure)
+                failure_records.append(failure)
+                task = {"task_id": task_id, "file": relative_sop_file, "sop_id": "UNKNOWN", "sample_idx": sample_idx, "status": "failed", "attempts": 0, "reason": reason}
+                append_jsonl(tasks_path, task)
+                task_records.append(task)
             continue
 
-        sop_id = sop.get("meta", {}).get("title", json_file.replace("_complex.json", ""))
-        num_dialogues = 1   # 每个 SOP 生成1条对话，可调整
-
-        for i in range(num_dialogues):
-            print(f"  生成第 {i+1} 条对话...")
-            try:
-                dialogue = generate_one_dialogue(sop, sop_id, sample_idx=i)
-                out_file = os.path.join(output_dir, f"{sop_id.replace('/', '_')}_dialogue.jsonl")
-                with open(out_file, "a", encoding="utf-8") as f:
-                    f.write(json.dumps(dialogue, ensure_ascii=False) + "\n")
-                print(f"    已追加到 {out_file}")
-                success_count += 1
-            except Exception as e:
-                error_msg = f"生成对话时异常: {str(e)}"
-                print(f"    {error_msg}")
-                fail_count += 1
-                failures.append({
-                    "file": json_file,
+        sop_id = sop.get("meta", {}).get("title", json_file.name.replace("_complex.json", ""))
+        try:
+            print("  路由专家角色...")
+            route_result = route_expert_role(sop, sop_id)
+        except Exception as exc:
+            reason = f"专家角色路由失败: {exc}"
+            print(f"  {reason}")
+            for sample_idx in range(args.samples_per_sop):
+                task_id = make_task_id(run_id, json_file.name, sample_idx)
+                failure = {
+                    "task_id": task_id,
+                    "file": relative_sop_file,
                     "sop_id": sop_id,
-                    "reason": error_msg
-                })
-            time.sleep(1)
+                    "sample_idx": sample_idx,
+                    "attempt": 0,
+                    "reason": reason,
+                }
+                append_jsonl(failures_path, failure)
+                failure_records.append(failure)
+                task = {"task_id": task_id, "file": relative_sop_file, "sop_id": sop_id, "sample_idx": sample_idx, "status": "failed", "attempts": 0, "reason": reason}
+                append_jsonl(tasks_path, task)
+                task_records.append(task)
+            continue
 
-    # ---------- 打印统计结果 ----------
-    print("\n" + "="*50)
+        for sample_idx in range(args.samples_per_sop):
+            task_id = make_task_id(run_id, json_file.name, sample_idx)
+            accepted = False
+            final_reason = ""
+            attempts_used = 0
+            for attempt in range(args.max_generation_attempts):
+                attempts_used = attempt + 1
+                print(f"  生成 sample {sample_idx + 1}/{args.samples_per_sop}, attempt {attempt + 1}/{args.max_generation_attempts}...")
+                try:
+                    record = generate_one_dialogue(
+                        sop=sop,
+                        sop_id=sop_id,
+                        sop_file=relative_sop_file,
+                        run_id=run_id,
+                        task_id=task_id,
+                        sample_idx=sample_idx,
+                        attempt=attempt,
+                        route_result=route_result,
+                        max_turns=args.max_turns,
+                        sleep_between_calls=args.sleep_between_calls,
+                    )
+                    ok, reason = validate_dialogue_structure(record, args.max_turns)
+                    if not ok:
+                        raise RuntimeError(f"结构/风格校验失败: {reason}")
+
+                    duplicate, duplicate_reason = is_duplicate_candidate(record, accepted_by_sop[sop_id])
+                    if duplicate:
+                        duplicate_rejections += 1
+                        raise RuntimeError(f"近重复样本: {duplicate_reason}")
+
+                    if args.strict:
+                        judge = judge_dialogue_against_sop(sop, record)
+                        record["validation"] = {
+                            "status": judge["verdict"],
+                            "reason": judge["reason"],
+                            "validator": "llm_judge",
+                        }
+                        if judge["verdict"] != "pass":
+                            final_reason = f"LLM质检未通过: {judge['verdict']} - {judge['reason']}"
+                            failure = {
+                                "task_id": task_id,
+                                "file": relative_sop_file,
+                                "sop_id": sop_id,
+                                "sample_idx": sample_idx,
+                                "attempt": attempt,
+                                "reason": final_reason,
+                            }
+                            append_jsonl(failures_path, failure)
+                            failure_records.append(failure)
+                            if judge["verdict"] == "drop":
+                                break
+                            continue
+                    else:
+                        record["validation"] = {
+                            "status": "pass",
+                            "reason": "strict judge disabled; structural/style/dedup validators passed",
+                            "validator": "local_validators",
+                        }
+
+                    append_jsonl(dialogues_path, record)
+                    accepted_records.append(record)
+                    accepted_by_sop[sop_id].append({
+                        "first_user": record["dialog"][0]["user"],
+                        "final_answer": record["dialog"][-1]["assistant"],
+                    })
+                    task = {
+                        "task_id": task_id,
+                        "file": relative_sop_file,
+                        "sop_id": sop_id,
+                        "sample_idx": sample_idx,
+                        "status": "accepted",
+                        "attempts": attempts_used,
+                    }
+                    append_jsonl(tasks_path, task)
+                    task_records.append(task)
+                    accepted = True
+                    print("    accepted")
+                    break
+
+                except Exception as exc:
+                    final_reason = str(exc)
+                    print(f"    失败: {final_reason}")
+                    failure = {
+                        "task_id": task_id,
+                        "file": relative_sop_file,
+                        "sop_id": sop_id,
+                        "sample_idx": sample_idx,
+                        "attempt": attempt,
+                        "reason": final_reason,
+                    }
+                    append_jsonl(failures_path, failure)
+                    failure_records.append(failure)
+                    time.sleep(1)
+
+            if not accepted:
+                task = {
+                    "task_id": task_id,
+                    "file": relative_sop_file,
+                    "sop_id": sop_id,
+                    "sample_idx": sample_idx,
+                    "status": "failed",
+                    "attempts": attempts_used,
+                    "reason": final_reason,
+                }
+                append_jsonl(tasks_path, task)
+                task_records.append(task)
+
+    summary = build_quality_summary(
+        run_id=run_id,
+        config=config,
+        accepted_records=accepted_records,
+        task_records=task_records,
+        failure_records=failure_records,
+        duplicate_rejections=duplicate_rejections,
+    )
+    write_json(reports_dir / "quality_summary.json", summary)
+    write_sha256sums(run_dir)
+
+    print("\n" + "=" * 50)
     print("生成统计报告")
-    print("="*50)
-    print(f"总尝试生成对话数: {success_count + fail_count}")
-    print(f"✅ 成功: {success_count}")
-    print(f"❌ 失败: {fail_count}")
+    print("=" * 50)
+    print(f"目标任务数: {len(task_records)}")
+    print(f"accepted: {summary['accepted_count']}")
+    print(f"failed tasks: {summary['failed_task_count']}")
+    print(f"failure attempts: {summary['failure_attempt_count']}")
+    print(f"duplicate rejections: {duplicate_rejections}")
+    print(f"对话文件: {dialogues_path}")
+    print(f"质量报告: {reports_dir / 'quality_summary.json'}")
 
-    if failures:
-        print("\n失败详情:")
-        for idx, fail in enumerate(failures, 1):
-            print(f"  {idx}. 文件: {fail['file']} | SOP标题: {fail['sop_id']}")
-            print(f"     原因: {fail['reason']}")
-    else:
-        print("\n所有对话均生成成功！")
-
-    print(f"\n对话文件保存在: {output_dir}/")
 
 if __name__ == "__main__":
     main()
