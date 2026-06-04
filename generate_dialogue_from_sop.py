@@ -1144,6 +1144,12 @@ def parse_args():
     )
     parser.add_argument("--seed", type=int, default=20260604, help="Random seed.")
     parser.add_argument("--limit-sops", type=int, default=0, help="Limit number of SOP files, useful for smoke tests.")
+    parser.add_argument(
+        "--target-dialogues",
+        type=int,
+        default=0,
+        help="Exact target task count distributed across SOP files; 0 uses --samples-per-sop for every SOP.",
+    )
     parser.add_argument("--concurrency", type=int, default=1, help="Number of SOP files to process concurrently.")
     parser.add_argument("--sleep-between-calls", type=float, default=DEFAULT_SLEEP_BETWEEN_CALLS)
     return parser.parse_args()
@@ -1160,6 +1166,8 @@ def main():
         raise ValueError("--max-turns 必须 >= 1")
     if args.concurrency < 1:
         raise ValueError("--concurrency 必须 >= 1")
+    if args.target_dialogues < 0:
+        raise ValueError("--target-dialogues 必须 >= 0")
     if args.judge_sample_rate < 0 or args.judge_sample_rate > 1:
         raise ValueError("--judge-sample-rate 必须在 0 到 1 之间")
 
@@ -1189,6 +1197,17 @@ def main():
     if not json_files:
         print(f"在 {input_dir} 中没有找到任何 _complex.json 文件。")
         return
+    if args.target_dialogues:
+        base_samples, extra_samples = divmod(args.target_dialogues, len(json_files))
+        sample_targets = [
+            base_samples + (1 if index < extra_samples else 0)
+            for index, _ in enumerate(json_files)
+        ]
+    else:
+        sample_targets = [args.samples_per_sop for _ in json_files]
+    target_task_count = sum(sample_targets)
+    if target_task_count < 1:
+        raise ValueError("目标任务数必须 >= 1")
 
     config = {
         "run_id": run_id,
@@ -1199,6 +1218,8 @@ def main():
         "api_base_url": API_BASE_URL,
         "code_commit": code_commit,
         "samples_per_sop": args.samples_per_sop,
+        "target_dialogues": args.target_dialogues,
+        "target_task_count": target_task_count,
         "max_generation_attempts": args.max_generation_attempts,
         "max_turns": args.max_turns,
         "strict": args.strict,
@@ -1208,13 +1229,21 @@ def main():
         "concurrency": args.concurrency,
         "sop_file_count": len(json_files),
         "api_key_count": len(parse_api_keys()),
+        "per_sop_target_counts": {
+            json_file.name: target
+            for json_file, target in zip(json_files, sample_targets)
+            if target
+        },
         "forbidden_phrases": FORBIDDEN_PHRASES,
     }
     write_json(run_dir / "config.json", config)
 
     print(f"run_id: {run_id}")
     print(f"输出目录: {run_dir}")
-    print(f"找到 {len(json_files)} 个 SOP 文件，目标每个 SOP {args.samples_per_sop} 条 accepted 对话。")
+    if args.target_dialogues:
+        print(f"找到 {len(json_files)} 个 SOP 文件，目标总任务数 {target_task_count} 条 accepted 对话。")
+    else:
+        print(f"找到 {len(json_files)} 个 SOP 文件，目标每个 SOP {args.samples_per_sop} 条 accepted 对话。")
 
     accepted_records = []
     task_records = []
@@ -1222,8 +1251,8 @@ def main():
     judge_sample_records = []
     duplicate_rejections = 0
 
-    def process_json_file(item: tuple[int, Path]) -> dict:
-        file_index, json_file = item
+    def process_json_file(item: tuple[int, Path, int]) -> dict:
+        file_index, json_file, sample_target = item
         rng = random.Random(args.seed + file_index * 1009)
         local_accepted_records = []
         local_task_records = []
@@ -1237,7 +1266,7 @@ def main():
             with json_file.open("r", encoding="utf-8") as handle:
                 sop = json.load(handle)
         except Exception as exc:
-            for sample_idx in range(args.samples_per_sop):
+            for sample_idx in range(sample_target):
                 task_id = make_task_id(run_id, json_file.name, sample_idx)
                 reason = f"读取JSON失败: {exc}"
                 failure = {
@@ -1269,7 +1298,7 @@ def main():
         except Exception as exc:
             reason = f"专家角色路由失败: {exc}"
             print(f"  {reason}")
-            for sample_idx in range(args.samples_per_sop):
+            for sample_idx in range(sample_target):
                 task_id = make_task_id(run_id, json_file.name, sample_idx)
                 failure = {
                     "task_id": task_id,
@@ -1293,14 +1322,14 @@ def main():
                 "duplicate_rejections": local_duplicate_rejections,
             }
 
-        for sample_idx in range(args.samples_per_sop):
+        for sample_idx in range(sample_target):
             task_id = make_task_id(run_id, json_file.name, sample_idx)
             accepted = False
             final_reason = ""
             attempts_used = 0
             for attempt in range(args.max_generation_attempts):
                 attempts_used = attempt + 1
-                print(f"  生成 sample {sample_idx + 1}/{args.samples_per_sop}, attempt {attempt + 1}/{args.max_generation_attempts}...")
+                print(f"  生成 sample {sample_idx + 1}/{sample_target}, attempt {attempt + 1}/{args.max_generation_attempts}...")
                 try:
                     record = generate_one_dialogue(
                         sop=sop,
@@ -1352,7 +1381,7 @@ def main():
                             "reason": "strict judge disabled; structural/style/dedup validators passed",
                             "validator": "local_validators",
                         }
-                        if args.judge_sample_rate and random.random() < args.judge_sample_rate:
+                        if args.judge_sample_rate and rng.random() < args.judge_sample_rate:
                             try:
                                 judge = judge_dialogue_against_sop(sop, record)
                                 judge_record = {
@@ -1440,7 +1469,11 @@ def main():
         judge_sample_records.extend(result["judge_sample_records"])
         duplicate_rejections += result["duplicate_rejections"]
 
-    work_items = list(enumerate(json_files))
+    work_items = [
+        (index, json_file, sample_target)
+        for index, (json_file, sample_target) in enumerate(zip(json_files, sample_targets))
+        if sample_target
+    ]
     worker_count = min(args.concurrency, len(work_items))
     if worker_count == 1:
         for item in work_items:
